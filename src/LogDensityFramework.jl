@@ -14,5 +14,6 @@ import DiffResults
 import Base: length
 
 include("evaluation.jl")
+include("problem.jl")
 
 end # module

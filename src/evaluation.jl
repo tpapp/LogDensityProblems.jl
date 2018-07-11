@@ -1,4 +1,4 @@
-export LogDensityEvaluated, NoDerivative, ForwardDiffAD
+export LogDensityEvaluated, NoDerivative, ForwardAD
 
 struct LogDensityEvaluated{T <: Real,
                            S <: Union{Nothing,AbstractVector{T}}}
@@ -27,25 +27,25 @@ function evaluate(::NoDerivative, f, x)
     isfinite(v) ? LogDensityEvaluated(v) : nothing
 end
 
-struct ForwardDiffAD{C} <: EvaluationMethod
+struct ForwardAD{C} <: EvaluationMethod
     chunk::C
 end
 
-ForwardDiffAD() = ForwardDiffAD(nothing)
+ForwardAD() = ForwardAD(nothing)
 
 struct ForwardDiffEvalEnv{C,R}
     cfg::C
     result::R
 end
 
-function evaluation_environment(evalmethod::ForwardDiffAD{<: ForwardDiff.Chunk}, f, x)
+function evaluation_environment(evalmethod::ForwardAD{<: ForwardDiff.Chunk}, f, x)
     cfg = ForwardDiff.GradientConfig(f, x, evalmethod.chunk)
     result = DiffResults.GradientResult(x)
     ForwardDiffEvalEnv(cfg, result)
 end
 
-evaluation_environment(::ForwardDiffAD{<: Nothing}, f, x) =
-    evaluation_environment(ForwardDiffAD(ForwardDiff.Chunk(x)), f, x)
+evaluation_environment(::ForwardAD{<: Nothing}, f, x) =
+    evaluation_environment(ForwardAD(ForwardDiff.Chunk(x)), f, x)
 
 function evaluate(evalenv::ForwardDiffEvalEnv, f, x)
     @unpack cfg, result = evalenv
