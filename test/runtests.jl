@@ -45,7 +45,7 @@ end
     env1 = evaluation_environment(NoDerivative(), fexp, [0.0])
     @test env1 ≡ NoDerivative()
     @test evaluate(env1, fexp, [1.0]) ≈ LogDensityEvaluated(exp(3))
-    env2 = evaluation_environment(ForwardDiffAD(), fexp, [0.0])
+    env2 = evaluation_environment(ForwardAD(), fexp, [0.0])
     @test evaluation_environment(NoDerivative(), fexp, [0.0]) ≡ NoDerivative()
     @test evaluate(env2, fexp, [1.0]) ≈ LogDensityEvaluated(exp(3), [3*exp(3)])
 end
