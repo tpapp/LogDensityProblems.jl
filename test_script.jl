@@ -1,5 +1,5 @@
 using Pkg
-Pkg.add("https://github.com/tpapp/TransformVariables.jl")
-Pkg.activate(".")
-Pkg.build()
+pkg"add https://github.com/tpapp/TransformVariables.jl"
+pkg"activate ."
+pkg"build"
 Pkg.test(; coverage=true)
