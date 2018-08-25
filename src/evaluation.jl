@@ -1,5 +1,12 @@
 export LogDensityEvaluated, NoDerivative, ForwardAD
 
+abstract LogDensityAtPoint end
+
+function getlogdensity end
+
+function getloggradient end
+
+
 struct LogDensityEvaluated{T <: Real,
                            S <: Union{Nothing,AbstractVector{T}}}
     value::T
@@ -16,6 +23,11 @@ struct LogDensityEvaluated{T <: Real,
     end
 end
 
+"""
+    $(TYPEDEF)
+
+
+"""
 abstract type EvaluationMethod end
 
 struct NoDerivative <: EvaluationMethod end

@@ -9,11 +9,18 @@ export Problem, LogDensityProblem, Trajectory, logdensity
 module Problem
 
 using Random: AbstractRNG
+using DocStringExtensions: SIGNATURES
 
+"""
+    transformation(problem)
+
+Return a `TransformVariables.TransformReals` that encodes the transformation of
+variables.
+"""
 function transformation end
 
 """
-    isstochastic(problem)
+    $SIGNATURES
 
 If `true`, the problem
 
@@ -25,6 +32,7 @@ If `false`, the problem has a `logdensity` method with two arguments.
 isstochastic(problem) = false
 
 """
+    $SIGNATURES
 """
 common_random(problem, rng::AbstractRNG) = nothing
 
@@ -37,7 +45,7 @@ logdensity(problem, parameters, rng::AbstractRNG, common_random)
 
 Log density function for `problem` at `parameters`.
 
-Returns `nothing` for `0` density or infeasible parameters, a real number
+Returns `nothing` for `0` density or infeasible parameters, a finite real number
 otherwise.
 """
 function logdensity end
@@ -48,6 +56,11 @@ end
 
 # log density
 
+"""
+    $(TYPEDEF)
+
+
+"""
 struct LogDensityProblem{S, P, T <: TransformReals, E <: EvaluationMethod}
     problem::P
     transformation::T
@@ -63,14 +76,16 @@ length(ℓ::LogDensityProblem) = length(ℓ.transformation)
 
 function local_logdensity(ℓ::LogDensityProblem{false})
     @unpack problem, transformation = ℓ
-    x -> transform_logdensity(transformation, y -> Problem.logdensity(problem, y), x)
+    x -> transform_logdensity(transformation,
+                              y -> Problem.logdensity(problem, y), x)
 end
 
 function local_logdensity(ℓ::LogDensityProblem{true}, rng::AbstractRNG,
                           common_random)
     @unpack problem, transformation = ℓ
     x -> transform_logdensity(transformation,
-                              y -> Problem.logdensity(problem, y), x, rng, common_random)
+                              y -> Problem.logdensity(problem, y, rng, common_random),
+                              x)
 end
 
 struct Trajectory{L, E, F, R <: Union{Nothing, AbstractRNG}, C}

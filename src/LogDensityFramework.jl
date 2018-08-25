@@ -2,7 +2,7 @@ module LogDensityFramework
 
 using ArgCheck: @argcheck
 
-using DocStringExtensions: SIGNATURES
+using DocStringExtensions: SIGNATURES, TYPEDEF
 using Random: AbstractRNG
 using Parameters: @unpack
 using TransformVariables: TransformReals, transform_logdensity
