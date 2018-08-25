@@ -1,13 +1,13 @@
-using LogDensityFramework
+using LogDensityProblems
 using Test
 using Parameters: @unpack
 using StatsBase: mean_and_var
 using TransformVariables
 import ForwardDiff
 
-using LogDensityFramework
-import LogDensityFramework: logdensity
-using LogDensityFramework: evaluation_environment, evaluate
+using LogDensityProblems
+import LogDensityProblems: logdensity
+using LogDensityProblems: evaluation_environment, evaluate
 
 
 # test utilities

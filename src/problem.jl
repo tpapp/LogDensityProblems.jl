@@ -1,9 +1,6 @@
 export Problem, LogDensityProblem, Trajectory, logdensity
 
 
-# common random numbers and trajectories
-
-
 # problem interface
 
 module Problem

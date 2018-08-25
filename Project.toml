@@ -1,4 +1,4 @@
-name = "LogDensityFramework"
+name = "LogDensityProblems"
 uuid = "025064c8-8453-11e8-27bf-e54b7298189f"
 authors = ["Tamas K. Papp <tkpapp@gmail.com>"]
 version = "0.1.0"
