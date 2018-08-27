@@ -72,6 +72,34 @@ end
     end
 end
 
+@testset "-∞ log densities" begin
+    t = to_array(to_ℝ, 2)
+    validx = x -> all(x .> 0)
+    p = TransformedBayesianProblem(_ -> 0.0, x -> validx(x) ?  sum(abs2, x)/2 : -Inf, t)
+    ∇p = ForwardDiffLogDensity(p)
+
+    @test dimension(p) == dimension(∇p) == dimension(t)
+    @test p.transformation ≡ ∇p.transformation ≡ t
+
+    for _ in 1:100
+        x = randn(dimension(t))
+        px = logdensity(Value, ∇p, x)
+        ∇px = logdensity(ValueGradient, ∇p, x)
+        @test px isa Value
+        @test ∇px isa ValueGradient
+        @test px.value ≈ ∇px.value
+        if validx(x)
+            @test isfinite(px)
+            @test isfinite(∇px)
+            @test ∇px.value ≈ sum(abs2, x)/2
+            @test ∇px.gradient ≈ x
+        else
+            @test isinf(px)
+            @test isinf(∇px)
+        end
+    end
+end
+
 # 
 # # test utilities
 
