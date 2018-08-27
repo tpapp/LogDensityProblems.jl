@@ -1,5 +1,5 @@
 using LogDensityProblems
-using LogDensityProblems: Value, ValueGradient, finite_or_nothing
+using LogDensityProblems: Value, ValueGradient
 using Test
 
 using Distributions
@@ -14,27 +14,30 @@ using TransformVariables
 Compare fields and types (strictly), for unit testing.
 """
 ≅(::Any, ::Any) = false
-≅(::Nothing, ::Nothing) = true
 ≅(a::Value{T}, b::Value{T}) where {T} = a.value == b.value
 ≅(a::ValueGradient{T,V}, b::ValueGradient{T,V}) where {T,V} =
-    a.value == b.value && a.gradient == b.gradient
+    a.value == b.value && (a.value == -Inf || a.gradient == b.gradient)
 
 @testset "Value constructor" begin
     @test eltype(Value(1.0)) ≡ Float64
-    @test Value(1) ≅ Value(1.0)
-    @test_throws ArgumentError Value(-Inf)
+    @test_throws ArgumentError Value(Inf)
     @test_throws ArgumentError Value(NaN)
+    @test isfinite(Value(1.0))
+    @test !isinf(Value(1.0))
+    @test !isfinite(Value(-Inf))
+    @test isinf(Value(-Inf))
     @test_throws MethodError Value(:something)
-    @test finite_or_nothing(Value, 1.0) ≅ Value(1)
-    @test finite_or_nothing(Value, -Inf) ≅ nothing
-    @test_throws ArgumentError finite_or_nothing(Value, Inf)
 end
 
 @testset "ValueGradient constructor" begin
     @test eltype(ValueGradient(1.0, [2.0])) ≡ Float64
-    @test ValueGradient(1, [2]) ≅ ValueGradient(1.0, [2.0])
-    @test_throws ArgumentError ValueGradient(-Inf, [1.0])
+    @test_throws ArgumentError ValueGradient(Inf, [1.0])
     @test_throws ArgumentError ValueGradient(2.0, [Inf])
+    @test !isfinite(ValueGradient(-Inf, [12.0]))
+    @test isinf(ValueGradient(-Inf, [12.0]))
+    @test isfinite(ValueGradient(1.0, [12.0]))
+    @test !isinf(ValueGradient(1.0, [12.0]))
+    @test ValueGradient(1, [2.0]) ≅ ValueGradient(1.0, [2.0]) # conversion
 end
 
 @testset "transformed Bayesian problem" begin

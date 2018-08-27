@@ -1,6 +1,6 @@
 module LogDensityProblems
 
-import Base: eltype, getproperty, propertynames
+import Base: eltype, getproperty, propertynames, isfinite, isinf
 
 using ArgCheck: @argcheck
 using DocStringExtensions: SIGNATURES, TYPEDEF
@@ -16,60 +16,42 @@ export logdensity, dimension, TransformedBayesianProblem, ForwardDiffLogDensity
 
 # result types
 
-finite_or_nothing(::Type{T}, ::Nothing) where T = nothing
-
-@inline function _checked_minusinf(value)
-    @argcheck value == -Inf "value is neither finite nor -∞"
-    nothing
-end
-
 struct Value{T <: Real}
     value::T
-
-    global function finite_or_nothing(::Type{Value}, value::T) where T
-        T2 = promote_type(T, Float64)
-        if isfinite(value)
-            new{T2}(T2(value))
-        else
-            _checked_minusinf(value)
-        end
-    end
-
-    function Value(value::Real)
-        v = finite_or_nothing(Value, value)
-        @argcheck v isa Value
-        v
+    function Value{T}(value::T) where {T <: Real}
+        @argcheck isfinite(value) || value == -Inf
+        new{T}(value)
     end
 end
+
+Value(value::T) where {T <: Real} = Value{T}(value)
 
 eltype(::Type{Value{T}}) where T = T
 
 struct ValueGradient{T, V <: AbstractVector{T}}
     value::T
     gradient::V
-
-    global function finite_or_nothing(::Type{ValueGradient}, value::T1,
-                               gradient::AbstractVector{T2}
-                               ) where {T1 <: Real, T2 <: Real}
-        if isfinite(value)
-            @argcheck all(isfinite, gradient) "Finite value with non-finite gradient."
-            T = promote_type(T1, T2, Float64)
-            g = T ≡ T2 ? gradient : map(T, gradient)
-            new{T,typeof(g)}(T(value), g)
-        else
-            _checked_minusinf(value)
-        end
-    end
-
-    function ValueGradient(value::Real, gradient::AbstractVector{<: Real})
-        vg = finite_or_nothing(ValueGradient, value, gradient)
-        @argcheck vg isa ValueGradient
-        vg
+    function ValueGradient{T,V}(value::T, gradient::V
+                                ) where {T <: Real, V <: AbstractVector{T}}
+        @argcheck (isfinite(value) && all(isfinite, gradient))|| value == -Inf
+        new{T,V}(value, gradient)
     end
 
 end
 
+ValueGradient(value::T, gradient::V) where {T <: Real, V <: AbstractVector{T}} =
+    ValueGradient{T,V}(value, gradient)
+
+function ValueGradient(value::T1, gradient::AbstractVector{T2}) where {T1,T2}
+    T = promote_type(T1, T2)
+    ValueGradient(T(value), T ≡ T2 ? gradient : map(T, gradient))
+end
+
 eltype(::Type{ValueGradient{T,V}}) where {T,V} = T
+
+isfinite(v::Union{Value, ValueGradient}) = isfinite(v.value)
+
+isinf(v::Union{Value, ValueGradient}) = isinf(v.value)
 
 
 # interface for problems
@@ -90,20 +72,18 @@ dimension(p::TransformedBayesianProblem) = dimension(p.transformation)
 
 function logdensity(::Type{Value}, p::TransformedBayesianProblem, x::RealVector)
     @unpack logprior, loglikelihood, transformation = p
-    finite_or_nothing(Value,
-                      transform_logdensity(transformation,
-                                           θ -> logprior(θ) + loglikelihood(θ), x))
+    Value(transform_logdensity(transformation, θ -> logprior(θ) + loglikelihood(θ), x))
 end
 
 
-# wrappers
+# wrappers — general
 
 "FIXME: has a field ℓ, properties and dimenson are forwarded"
 abstract type LogDensityWrapper <: AbstractLogDensityProblem end
 
 dimension(w::LogDensityWrapper) = dimension(w.ℓ)
 
-propertynames(w::LogDensityWrapper) = unique((fieldnames(w)..., propertynames(w.ℓ)...))
+propertynames(w::LogDensityWrapper) = unique((fieldnames(typeof(w))..., propertynames(w.ℓ)...))
 
 function getproperty(w::LogDensityWrapper, name::Symbol)
     if name ∈ fieldnames(typeof(w))
@@ -113,13 +93,15 @@ function getproperty(w::LogDensityWrapper, name::Symbol)
     end
 end
 
+
+# AD using ForwardDiff
+
 struct ForwardDiffLogDensity{L, C} <: LogDensityWrapper
     ℓ::L
     gradientconfig::C
 end
 
-@inline _value_closure(ℓ) =
-    x -> (fx = logdensity(Value, ℓ, x); fx ≡ nothing ? oftype(eltype(x), -Inf) : fx.value)
+@inline _value_closure(ℓ) = x -> logdensity(Value, ℓ, x).value
 
 _anyargument(ℓ) = zeros(dimension(ℓ))
 
@@ -141,8 +123,7 @@ function logdensity(::Type{ValueGradient}, fℓ::ForwardDiffLogDensity, x::RealV
     @unpack ℓ, gradientconfig = fℓ
     result = DiffResults.GradientResult(_anyargument(ℓ)) # allocate a new result
     result = ForwardDiff.gradient!(result, _value_closure(ℓ), x, gradientconfig)
-    finite_or_nothing(ValueGradient,
-                      DiffResults.value(result), DiffResults.gradient(result))
+    ValueGradient(DiffResults.value(result), DiffResults.gradient(result))
 end
 
 end # module
