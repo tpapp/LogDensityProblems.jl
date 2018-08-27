@@ -1,7 +1,11 @@
+using LogDensityProblems
 using LogDensityProblems: Value, ValueGradient, finite_or_nothing
 using Test
+
+using Distributions
 using Parameters: @unpack
 using DocStringExtensions: SIGNATURES
+using TransformVariables
 
 """
     a ≅ b
@@ -30,6 +34,25 @@ end
     @test ValueGradient(1, [2]) ≅ ValueGradient(1.0, [2.0])
     @test_throws ArgumentError ValueGradient(-Inf, [1.0])
     @test_throws ArgumentError ValueGradient(2.0, [Inf])
+end
+
+@testset "transformed Bayesian problem" begin
+    t = to_tuple((y = to_ℝ₊, ))
+    d = LogNormal(1.0, 2.0)
+    logprior = _ -> 0.0
+    loglikelihood = ((x, ), ) -> logpdf(d, x)
+    p = TransformedBayesianProblem(logprior, loglikelihood, t)
+
+    @test dimension(p) == 1
+    @test p.transformation ≡ t
+    @test p.logprior ≡ logprior
+    @test p.loglikelihood ≡ loglikelihood
+
+    for _ in 1:100
+        x = randn(dimension(t))
+        θ, lj = transform_and_logjac(t, x)
+        @test logpdf(d, θ.y) + lj ≈ (logdensity(Value, p, x)::Value).value
+    end
 end
 
 # 
