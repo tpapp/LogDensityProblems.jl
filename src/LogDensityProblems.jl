@@ -4,9 +4,11 @@ import Base: eltype, getproperty, propertynames
 
 using ArgCheck: @argcheck
 using DocStringExtensions: SIGNATURES, TYPEDEF
+import DiffResults
+import ForwardDiff
 using Parameters: @unpack
 
-using TransformVariables: TransformReals, transform_logdensity
+using TransformVariables: TransformReals, transform_logdensity, RealVector
 import TransformVariables: dimension
 
 export logdensity, dimension, TransformedBayesianProblem, ForwardDiffLogDensity
@@ -14,7 +16,7 @@ export logdensity, dimension, TransformedBayesianProblem, ForwardDiffLogDensity
 
 # result types
 
-function finite_or_nothing end
+finite_or_nothing(::Type{T}, ::Nothing) where T = nothing
 
 @inline function _checked_minusinf(value)
     @argcheck value == -Inf "value is neither finite nor -∞"
@@ -86,7 +88,7 @@ end
 
 dimension(p::TransformedBayesianProblem) = dimension(p.transformation)
 
-function logdensity(::Type{Value}, p::TransformedBayesianProblem, x)
+function logdensity(::Type{Value}, p::TransformedBayesianProblem, x::RealVector)
     @unpack logprior, loglikelihood, transformation = p
     finite_or_nothing(Value,
                       transform_logdensity(transformation,
@@ -111,13 +113,13 @@ function getproperty(w::LogDensityWrapper, name::Symbol)
     end
 end
 
-struct ForwardDiffLogDensity{L, C, R} <: LogDensityWrapper
+struct ForwardDiffLogDensity{L, C} <: LogDensityWrapper
     ℓ::L
     gradientconfig::C
-    result::R
 end
 
-@inline _value_closure(ℓ) = x -> logdensity(Value, ℓ, x)
+@inline _value_closure(ℓ) =
+    x -> (fx = logdensity(Value, ℓ, x); fx ≡ nothing ? oftype(eltype(x), -Inf) : fx.value)
 
 _anyargument(ℓ) = zeros(dimension(ℓ))
 
@@ -128,15 +130,16 @@ _default_gradientconfig(ℓ, chunk) =
 
 function ForwardDiffLogDensity(ℓ;
                                chunk = _default_chunk(ℓ),
-                               gradientconfig = _default_gradientconfig(ℓ))
-    ForwardDiffLogDensity(ℓ, gradientconfig,
-                          DiffResults.GradientResult(_anyargument(ℓ)))
+                               gradientconfig = _default_gradientconfig(ℓ, chunk))
+    ForwardDiffLogDensity(ℓ, gradientconfig)
 end
 
-logdensity(::Type{Value}, fℓ::ForwardDiffLogDensity, x) = logdensity(Value, fℓ.ℓ, x)
+logdensity(::Type{Value}, fℓ::ForwardDiffLogDensity, x::RealVector) =
+    logdensity(Value, fℓ.ℓ, x)
 
-function logdensity(::Type{ValueGradient}, fℓ::ForwardDiffLogDensity, x)
-    @unpack ℓ, gradientconfig, result = fℓ
+function logdensity(::Type{ValueGradient}, fℓ::ForwardDiffLogDensity, x::RealVector)
+    @unpack ℓ, gradientconfig = fℓ
+    result = DiffResults.GradientResult(_anyargument(ℓ)) # allocate a new result
     result = ForwardDiff.gradient!(result, _value_closure(ℓ), x, gradientconfig)
     finite_or_nothing(ValueGradient,
                       DiffResults.value(result), DiffResults.gradient(result))

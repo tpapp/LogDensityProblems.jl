@@ -3,6 +3,7 @@ using LogDensityProblems: Value, ValueGradient, finite_or_nothing
 using Test
 
 using Distributions
+import ForwardDiff
 using Parameters: @unpack
 using DocStringExtensions: SIGNATURES
 using TransformVariables
@@ -41,17 +42,30 @@ end
     d = LogNormal(1.0, 2.0)
     logprior = _ -> 0.0
     loglikelihood = ((x, ), ) -> logpdf(d, x)
-    p = TransformedBayesianProblem(logprior, loglikelihood, t)
 
+    # a Bayesian problem
+    p = TransformedBayesianProblem(logprior, loglikelihood, t)
     @test dimension(p) == 1
     @test p.transformation ≡ t
     @test p.logprior ≡ logprior
     @test p.loglikelihood ≡ loglikelihood
 
+    # gradient of a problem
+    ∇p = ForwardDiffLogDensity(p)
+    @test dimension(∇p) == 1
+    @test ∇p.transformation ≡ t
+    @test ∇p.logprior ≡ logprior
+    @test ∇p.loglikelihood ≡ loglikelihood
+
     for _ in 1:100
         x = randn(dimension(t))
         θ, lj = transform_and_logjac(t, x)
-        @test logpdf(d, θ.y) + lj ≈ (logdensity(Value, p, x)::Value).value
+        px = logdensity(Value, p, x)
+        @test logpdf(d, θ.y) + lj ≈ (px::Value).value
+        @test (logdensity(Value, ∇p, x)::Value).value ≈ px.value
+        ∇px = logdensity(ValueGradient, ∇p, x)
+        @test (∇px::ValueGradient).value ≈ px.value
+        @test ∇px.gradient ≈ [ForwardDiff.derivative(x -> logpdf(d, exp(x)) + x, x[1])]
     end
 end
 
