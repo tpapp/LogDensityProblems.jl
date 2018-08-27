@@ -1,4 +1,4 @@
-name = "LogDensityFramework"
+name = "LogDensityProblems"
 uuid = "025064c8-8453-11e8-27bf-e54b7298189f"
 authors = ["Tamas K. Papp <tkpapp@gmail.com>"]
 version = "0.1.0"
@@ -13,8 +13,9 @@ Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 TransformVariables = "eb4f743c-8036-11e8-1c4c-19fb1cbfc623"
 
 [extras]
+Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Test", "StatsBase"]
+test = ["Distributions", "Test", "StatsBase"]
