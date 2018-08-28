@@ -104,8 +104,14 @@ gradient, both returning eponymous types.
 """
 function logdensity end
 
+struct TransformedBayesianProblem{P, L, T <: TransformReals} <: AbstractLogDensityProblem
+    transformation::T
+    loglikelihood::L
+    logprior::P
+end
+
 """
-    TransformedBayesianProblem(logprior, loglikelihood, transformation)
+    TransformedBayesianProblem(transformation, loglikelihood, [logprior])
 
 A problem in Bayesian inference. Vectors of length `dimension(transformation)`
 are transformed into a general object `θ` (unrestricted type, but a named tuple
@@ -115,6 +121,10 @@ is recommended for clean code).
 the sum of which determining the log posterior, correcting for the log Jacobian
 determinant of the transformation.
 
+When `logprior` is omitted, it is taken to be `0` (in `θ`). In this case it is
+assumed that `loglikelihood` also contains the prior density, or a flat prior is
+used. This is for convenience only.
+
 For zero densities or infeasible `θ`s, `-Inf` or similar should be returned, but
 for efficiency of inference most methods recommend using `transformation` to
 avoid this.
@@ -122,10 +132,8 @@ avoid this.
 It is recommended that `loglikelihood` is a callable object that also
 encapsulates the data for the problem.
 """
-struct TransformedBayesianProblem{P, L, T <: TransformReals} <: AbstractLogDensityProblem
-    logprior::P
-    loglikelihood::L
-    transformation::T
+function TransformedBayesianProblem(transformation::TransformReals, loglikelihood)
+    TransformedBayesianProblem(transformation, loglikelihood, _ -> 0.0)
 end
 
 """
@@ -136,7 +144,7 @@ The dimension of the problem, ie the length of the vectors in its domain.
 dimension(p::TransformedBayesianProblem) = dimension(p.transformation)
 
 function logdensity(::Type{Value}, p::TransformedBayesianProblem, x::RealVector)
-    @unpack logprior, loglikelihood, transformation = p
+    @unpack transformation, loglikelihood, logprior = p
     Value(transform_logdensity(transformation, θ -> logprior(θ) + loglikelihood(θ), x))
 end
 
