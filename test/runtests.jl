@@ -47,7 +47,7 @@ end
     loglikelihood = ((x, ), ) -> logpdf(d, x)
 
     # a Bayesian problem
-    p = TransformedBayesianProblem(logprior, loglikelihood, t)
+    p = TransformedBayesianProblem(t, loglikelihood, logprior)
     @test dimension(p) == 1
     @test p.transformation ≡ t
     @test p.logprior ≡ logprior
@@ -75,7 +75,7 @@ end
 @testset "-∞ log densities" begin
     t = to_array(to_ℝ, 2)
     validx = x -> all(x .> 0)
-    p = TransformedBayesianProblem(_ -> 0.0, x -> validx(x) ?  sum(abs2, x)/2 : -Inf, t)
+    p = TransformedBayesianProblem(t, x -> validx(x) ?  sum(abs2, x)/2 : -Inf)
     ∇p = ForwardDiffLogDensity(p)
 
     @test dimension(p) == dimension(∇p) == dimension(t)
@@ -99,3 +99,6 @@ end
         end
     end
 end
+
+# also make the docs
+include("../docs/make.jl")
