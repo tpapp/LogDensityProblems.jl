@@ -24,6 +24,17 @@ struct Value{T <: Real}
     end
 end
 
+"""
+$(SIGNATURES)
+
+Holds the value of a logdensity at a given point.
+
+Constructor ensures that the value is either finite, or ``-∞``.
+
+All other values (eg `NaN` or `Inf` for the `value`) lead to an error.
+
+See also [`logdensity`](@ref).
+"""
 Value(value::T) where {T <: Real} = Value{T}(value)
 
 eltype(::Type{Value{T}}) where T = T
@@ -39,6 +50,21 @@ struct ValueGradient{T, V <: AbstractVector{T}}
 
 end
 
+"""
+$(SIGNATURES)
+
+Holds the value and gradient of a logdensity at a given point.
+
+Constructor ensures that either
+
+1. both the value and the gradient are finite,
+
+2. the value is ``-∞`` (then gradient is not checked).
+
+All other values (eg `NaN` or `Inf` for the `value`) lead to an error.
+
+See also [`logdensity`](@ref).
+"""
 ValueGradient(value::T, gradient::V) where {T <: Real, V <: AbstractVector{T}} =
     ValueGradient{T,V}(value, gradient)
 
@@ -56,18 +82,57 @@ isinf(v::Union{Value, ValueGradient}) = isinf(v.value)
 
 # interface for problems
 
+"""
+Abstract type for log density representations, which support the following
+interface for `ℓ::AbstractLogDensityProblem`:
+
+1. [`dimension`](@ref) returns the *dimension* of the domain of `ℓ`,
+
+2. [`logdensity`](@ref) evaluates the log density `ℓ` at a given point.
+"""
 abstract type AbstractLogDensityProblem end
 
-# """FIXME
-# """
+"""
+    logdensity(resulttype, ℓ, x)
+
+Evaluate the [`AbstractLogDensityProblem`](@ref) `ℓ` at `x`, which has length
+compatible with its [`dimension`](@ref).
+
+The argument `resulttype` determines the type of the result. [`Value`]@(ref)
+results in the log density, while [`ValueGradient`](@ref) also calculates the
+gradient, both returning eponymous types.
+"""
 function logdensity end
 
+"""
+    TransformedBayesianProblem(logprior, loglikelihood, transformation)
+
+A problem in Bayesian inference. Vectors of length `dimension(transformation)`
+are transformed into a general object `θ` (unrestricted type, but a named tuple
+is recommended for clean code).
+
+`logprior(θ)` and `loglikelihood(θ)` are then called, returning *real numbers*,
+the sum of which determining the log posterior, correcting for the log Jacobian
+determinant of the transformation.
+
+For zero densities or infeasible `θ`s, `-Inf` or similar should be returned, but
+for efficiency of inference most methods recommend using `transformation` to
+avoid this.
+
+It is recommended that `loglikelihood` is a callable object that also
+encapsulates the data for the problem.
+"""
 struct TransformedBayesianProblem{P, L, T <: TransformReals} <: AbstractLogDensityProblem
     logprior::P
     loglikelihood::L
     transformation::T
 end
 
+"""
+$(SIGNATURES)
+
+The dimension of the problem, ie the length of the vectors in its domain.
+"""
 dimension(p::TransformedBayesianProblem) = dimension(p.transformation)
 
 function logdensity(::Type{Value}, p::TransformedBayesianProblem, x::RealVector)
@@ -78,12 +143,21 @@ end
 
 # wrappers — general
 
-"FIXME: has a field ℓ, properties and dimenson are forwarded"
+"""
+An abstract type that wraps another log density in its field `ℓ`.
+
+# Notes
+
+Implementation detail, *not exported*.
+
+Forwards properties other than its field names to `ℓ`.
+"""
 abstract type LogDensityWrapper <: AbstractLogDensityProblem end
 
 dimension(w::LogDensityWrapper) = dimension(w.ℓ)
 
-propertynames(w::LogDensityWrapper) = unique((fieldnames(typeof(w))..., propertynames(w.ℓ)...))
+propertynames(w::LogDensityWrapper) =
+    unique((fieldnames(typeof(w))..., propertynames(w.ℓ)...))
 
 function getproperty(w::LogDensityWrapper, name::Symbol)
     if name ∈ fieldnames(typeof(w))
@@ -110,7 +184,15 @@ _default_chunk(ℓ) = ForwardDiff.Chunk(_anyargument(ℓ))
 _default_gradientconfig(ℓ, chunk) =
     ForwardDiff.GradientConfig(_value_closure(ℓ), _anyargument(ℓ), chunk)
 
-function ForwardDiffLogDensity(ℓ;
+"""
+$(SIGNATURES)
+
+Wrap a log density that supports evaluation of `Value` to handle
+`ValueGradient`, using `ForwardDiff`.
+
+Keywords are passed on to `ForwardDiff.GradientConfig` to customize the setup.
+"""
+function ForwardDiffLogDensity(ℓ::AbstractLogDensityProblem;
                                chunk = _default_chunk(ℓ),
                                gradientconfig = _default_gradientconfig(ℓ, chunk))
     ForwardDiffLogDensity(ℓ, gradientconfig)

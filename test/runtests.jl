@@ -99,3 +99,6 @@ end
         end
     end
 end
+
+# also make the docs
+include("../docs/make.jl")
