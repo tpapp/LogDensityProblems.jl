@@ -8,7 +8,7 @@ import DiffResults
 import ForwardDiff
 using Parameters: @unpack
 
-using TransformVariables: TransformReals, transform_logdensity, RealVector
+using TransformVariables: AbstractTransform, transform_logdensity, RealVector
 import TransformVariables: dimension
 
 export logdensity, dimension, TransformedBayesianProblem, ForwardDiffLogDensity
@@ -104,7 +104,7 @@ gradient, both returning eponymous types.
 """
 function logdensity end
 
-struct TransformedBayesianProblem{P, L, T <: TransformReals} <: AbstractLogDensityProblem
+struct TransformedBayesianProblem{P, L, T <: AbstractTransform} <: AbstractLogDensityProblem
     transformation::T
     loglikelihood::L
     logprior::P
@@ -132,7 +132,7 @@ avoid this.
 It is recommended that `loglikelihood` is a callable object that also
 encapsulates the data for the problem.
 """
-function TransformedBayesianProblem(transformation::TransformReals, loglikelihood)
+function TransformedBayesianProblem(transformation::AbstractTransform, loglikelihood)
     TransformedBayesianProblem(transformation, loglikelihood, _ -> 0.0)
 end
 
