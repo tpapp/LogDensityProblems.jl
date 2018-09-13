@@ -41,24 +41,21 @@ end
 end
 
 @testset "transformed Bayesian problem" begin
-    t = to_tuple((y = to_ℝ₊, ))
+    t = as((y = ℝ₊, ))
     d = LogNormal(1.0, 2.0)
-    logprior = _ -> 0.0
-    loglikelihood = ((x, ), ) -> logpdf(d, x)
+    logposterior = ((x, ), ) -> logpdf(d, x)
 
     # a Bayesian problem
-    p = TransformedBayesianProblem(t, loglikelihood, logprior)
+    p = TransformedBayesianProblem(t, logposterior)
     @test dimension(p) == 1
     @test p.transformation ≡ t
-    @test p.logprior ≡ logprior
-    @test p.loglikelihood ≡ loglikelihood
+    @test p.logposterior ≡ logposterior
 
     # gradient of a problem
     ∇p = ForwardDiffLogDensity(p)
     @test dimension(∇p) == 1
     @test ∇p.transformation ≡ t
-    @test ∇p.logprior ≡ logprior
-    @test ∇p.loglikelihood ≡ loglikelihood
+    @test ∇p.logposterior ≡ logposterior
 
     for _ in 1:100
         x = randn(dimension(t))
@@ -73,7 +70,7 @@ end
 end
 
 @testset "-∞ log densities" begin
-    t = to_array(to_ℝ, 2)
+    t = as(Array, 2)
     validx = x -> all(x .> 0)
     p = TransformedBayesianProblem(t, x -> validx(x) ?  sum(abs2, x)/2 : -Inf)
     ∇p = ForwardDiffLogDensity(p)
