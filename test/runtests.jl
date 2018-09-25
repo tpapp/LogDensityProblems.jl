@@ -104,5 +104,13 @@ end
     @test length(b) ≤ 20
 end
 
+@testset "stresstest" begin
+    f = x -> all(x .< 0) ? NaN : -sum(abs2, x)
+    ℓ = TransformedLogDensity(as(Array, 2), f)
+    failures = LogDensityProblems.stresstest(ℓ; N = 1000)
+    @test 230 ≤ length(failures) ≤ 270
+    @test all(x -> all(x .< 0), failures)
+end
+
 # also make the docs
 include("../docs/make.jl")

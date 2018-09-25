@@ -8,6 +8,7 @@ using DocStringExtensions: SIGNATURES, TYPEDEF
 import DiffResults
 import ForwardDiff
 using Parameters: @unpack
+using Random: AbstractRNG, GLOBAL_RNG
 
 using TransformVariables: AbstractTransform, transform_logdensity, RealVector
 import TransformVariables: dimension
@@ -244,6 +245,36 @@ function benchmark_ForwardDiff_chunks(ℓ::AbstractLogDensityProblem;
         markprogress && print(".")
         chunk => @belapsed logdensity($(resulttype), $(∇ℓ), $(x))
     end
+end
+
+
+# stress testing
+
+"""
+$(SIGNATURES)
+
+Test `ℓ` with random values.
+
+Random values are drawn from a standard multivariate Cauchy distribution, scaled with
+`scale` (which can be a scalar or a conformable vector).
+
+`N` elements are drawn, using `rng`. In case the call produces an error, the value is
+recorded as a failure, failures are returned at the end.
+
+Not exported, but part of the API.
+"""
+function stresstest(ℓ::AbstractLogDensityProblem;
+                    N = 1000, rng::AbstractRNG = GLOBAL_RNG, scale = 1, resulttype = Value)
+    failures = Vector{Float64}[]
+    for _ in 1:N
+        x = randn(dimension(ℓ))  .* scale ./ abs2(randn())
+        try
+            logdensity(resulttype, ℓ, x)
+        catch e
+            push!(failures, x)
+        end
+    end
+    failures
 end
 
 end # module
