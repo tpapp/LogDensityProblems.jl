@@ -11,7 +11,7 @@ using Parameters: @unpack
 using TransformVariables: AbstractTransform, transform_logdensity, RealVector
 import TransformVariables: dimension
 
-export logdensity, dimension, TransformedBayesianProblem, ForwardDiffLogDensity
+export logdensity, dimension, TransformedLogDensity, ForwardDiffLogDensity
 
 
 # result types
@@ -105,7 +105,7 @@ gradient, both returning eponymous types.
 function logdensity end
 
 """
-    TransformedBayesianProblem(transformation, logposterior)
+    TransformedLogDensity(transformation, logposterior)
 
 A problem in Bayesian inference. Vectors of length `dimension(transformation)` are
 transformed into a general object `θ` (unrestricted type, but a named tuple is recommended
@@ -118,7 +118,7 @@ recommend using `transformation` to avoid this.
 It is recommended that `logposterior` is a callable object that also
 encapsulates the data for the problem.
 """
-struct TransformedBayesianProblem{T <: AbstractTransform, L} <: AbstractLogDensityProblem
+struct TransformedLogDensity{T <: AbstractTransform, L} <: AbstractLogDensityProblem
     transformation::T
     logposterior::L
 end
@@ -129,9 +129,9 @@ $(SIGNATURES)
 
 The dimension of the problem, ie the length of the vectors in its domain.
 """
-dimension(p::TransformedBayesianProblem) = dimension(p.transformation)
+dimension(p::TransformedLogDensity) = dimension(p.transformation)
 
-function logdensity(::Type{Value}, p::TransformedBayesianProblem, x::RealVector)
+function logdensity(::Type{Value}, p::TransformedLogDensity, x::RealVector)
     @unpack transformation, logposterior = p
     Value(transform_logdensity(transformation, logposterior, x))
 end

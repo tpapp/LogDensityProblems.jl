@@ -3,7 +3,7 @@
 # Problem definition
 
 ```@docs
-TransformedBayesianProblem
+TransformedLogDensity
 ForwardDiffLogDensity
 ```
 

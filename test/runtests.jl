@@ -41,12 +41,12 @@ end
 end
 
 @testset "transformed Bayesian problem" begin
-    t = as((y = ℝ₊, ))
+    t = as((y = asℝ₊, ))
     d = LogNormal(1.0, 2.0)
     logposterior = ((x, ), ) -> logpdf(d, x)
 
     # a Bayesian problem
-    p = TransformedBayesianProblem(t, logposterior)
+    p = TransformedLogDensity(t, logposterior)
     @test dimension(p) == 1
     @test p.transformation ≡ t
     @test p.logposterior ≡ logposterior
@@ -72,7 +72,7 @@ end
 @testset "-∞ log densities" begin
     t = as(Array, 2)
     validx = x -> all(x .> 0)
-    p = TransformedBayesianProblem(t, x -> validx(x) ?  sum(abs2, x)/2 : -Inf)
+    p = TransformedLogDensity(t, x -> validx(x) ?  sum(abs2, x)/2 : -Inf)
     ∇p = ForwardDiffLogDensity(p)
 
     @test dimension(p) == dimension(∇p) == dimension(t)
