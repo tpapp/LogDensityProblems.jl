@@ -97,5 +97,12 @@ end
     end
 end
 
+@testset "benchmark ForwardDiff problems" begin
+    ℓ = TransformedLogDensity(as(Array, 20), x -> -sum(abs2, x))
+    b = LogDensityProblems.benchmark_ForwardDiff_chunks(ℓ)
+    @test b isa Vector{Pair{Int,Float64}}
+    @test length(b) ≤ 20
+end
+
 # also make the docs
 include("../docs/make.jl")
