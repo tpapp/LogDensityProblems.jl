@@ -112,5 +112,13 @@ end
     @test all(x -> all(x .< 0), failures)
 end
 
+@testset "show" begin
+    t = as(Array, 5)
+    p = TransformedLogDensity(t, x -> -sum(abs2, x))
+    ∇p = ForwardDiffLogDensity(p; chunk = ForwardDiff.Chunk(2))
+    @test repr(p) == "TransformedLogDensity of dimension 5"
+    @test repr(∇p) == ("ForwardDiff AD wrapper for " * repr(p) * ", w/ chunk size 2")
+end
+
 # also make the docs
 include("../docs/make.jl")

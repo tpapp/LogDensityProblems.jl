@@ -1,6 +1,6 @@
 module LogDensityProblems
 
-import Base: eltype, getproperty, propertynames, isfinite, isinf
+import Base: eltype, getproperty, propertynames, isfinite, isinf, show
 
 using ArgCheck: @argcheck
 using BenchmarkTools: @belapsed
@@ -125,6 +125,8 @@ struct TransformedLogDensity{T <: AbstractTransform, L} <: AbstractLogDensityPro
     logposterior::L
 end
 
+show(io::IO, ℓ::TransformedLogDensity) =
+    print(io, "TransformedLogDensity of dimension $(dimension(ℓ.transformation))")
 
 """
 $(SIGNATURES)
@@ -173,6 +175,11 @@ struct ForwardDiffLogDensity{L, C} <: LogDensityWrapper
     gradientconfig::C
 end
 
+function show(io::IO, ℓ::ForwardDiffLogDensity)
+    print(io, "ForwardDiff AD wrapper for ", ℓ.ℓ,
+          ", w/ chunk size ", length(ℓ.gradientconfig.seeds))
+end
+
 @inline _value_closure(ℓ) = x -> logdensity(Value, ℓ, x).value
 
 _anyargument(ℓ) = zeros(dimension(ℓ))
@@ -185,13 +192,14 @@ _default_gradientconfig(ℓ, chunk) =
 """
 $(SIGNATURES)
 
-Wrap a log density that supports evaluation of `Value` to handle
-`ValueGradient`, using `ForwardDiff`.
+Wrap a log density that supports evaluation of `Value` to handle `ValueGradient`, using
+`ForwardDiff`.
 
-Keywords are passed on to `ForwardDiff.GradientConfig` to customize the setup.
+Keywords are passed on to `ForwardDiff.GradientConfig` to customize the setup. In
+particular, chunk size can be set with a `chunk = ForwardDiff.Chunk(n)` argument.
 """
 function ForwardDiffLogDensity(ℓ::AbstractLogDensityProblem;
-                               chunk = _default_chunk(ℓ),
+                               chunk::ForwardDiff.Chunk = _default_chunk(ℓ),
                                gradientconfig = _default_gradientconfig(ℓ, chunk))
     ForwardDiffLogDensity(ℓ, gradientconfig)
 end
