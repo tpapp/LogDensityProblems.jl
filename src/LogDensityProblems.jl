@@ -184,10 +184,13 @@ end
 
 _anyargument(ℓ) = zeros(dimension(ℓ))
 
-_default_chunk(ℓ) = ForwardDiff.Chunk(_anyargument(ℓ))
+_default_chunk(ℓ) = ForwardDiff.Chunk(dimension(ℓ))
 
-_default_gradientconfig(ℓ, chunk) =
+_default_gradientconfig(ℓ, chunk::ForwardDiff.Chunk) =
     ForwardDiff.GradientConfig(_value_closure(ℓ), _anyargument(ℓ), chunk)
+
+_default_gradientconfig(ℓ, chunk::Integer) =
+    _default_gradientconfig(ℓ, ForwardDiff.Chunk(chunk))
 
 """
 $(SIGNATURES)
@@ -196,10 +199,11 @@ Wrap a log density that supports evaluation of `Value` to handle `ValueGradient`
 `ForwardDiff`.
 
 Keywords are passed on to `ForwardDiff.GradientConfig` to customize the setup. In
-particular, chunk size can be set with a `chunk = ForwardDiff.Chunk(n)` argument.
+particular, chunk size can be set with a `chunk` keyword argument (accepting an integer or a
+`ForwardDiff.Chunk`).
 """
 function ForwardDiffLogDensity(ℓ::AbstractLogDensityProblem;
-                               chunk::ForwardDiff.Chunk = _default_chunk(ℓ),
+                               chunk = _default_chunk(ℓ),
                                gradientconfig = _default_gradientconfig(ℓ, chunk))
     ForwardDiffLogDensity(ℓ, gradientconfig)
 end

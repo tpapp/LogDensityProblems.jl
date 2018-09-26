@@ -115,7 +115,7 @@ end
 @testset "show" begin
     t = as(Array, 5)
     p = TransformedLogDensity(t, x -> -sum(abs2, x))
-    ∇p = ForwardDiffLogDensity(p; chunk = ForwardDiff.Chunk(2))
+    ∇p = ForwardDiffLogDensity(p; chunk = 2)
     @test repr(p) == "TransformedLogDensity of dimension 5"
     @test repr(∇p) == ("ForwardDiff AD wrapper for " * repr(p) * ", w/ chunk size 2")
 end
