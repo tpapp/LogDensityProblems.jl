@@ -7,6 +7,9 @@ import ForwardDiff
 using Parameters: @unpack
 using DocStringExtensions: SIGNATURES
 using TransformVariables
+using Random: seed!
+
+seed!(1)
 
 """
     a ≅ b
