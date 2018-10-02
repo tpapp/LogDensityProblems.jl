@@ -182,6 +182,7 @@ logdensity(::Type{Value}, fℓ::ADGradientWrapper, x::RealVector) =
 # wrappers - specific
 
 include("AD_ForwardDiff.jl")
+include("AD_Flux.jl")
 
 
 # stress testing
