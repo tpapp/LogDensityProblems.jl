@@ -24,10 +24,7 @@ matrix:
 #    - gfortran
 #before_script: # homebrew for mac
 #  - if [ $TRAVIS_OS_NAME = osx ]; then brew install gcc; fi
-
-## uncomment the following lines to override the default test script
-script:
- - julia test_script.jl
 after_success:
+  - julia submit_coverage.jl
   - julia docs/deploy.jl        # deploy documentation
   - julia submit_coverage.jl    # submit coverage
