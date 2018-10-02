@@ -1,5 +1,9 @@
 # Introduction
 
+!!! note
+
+    Currently this is just a placeholder that renders the docstrings.
+
 # Problem definition
 
 ```@docs
@@ -28,5 +32,6 @@ LogDensityProblems.benchmark_ForwardDiff_chunks
 ```@docs
 LogDensityProblems.AbstractLogDensityProblem
 LogDensityProblems.LogDensityWrapper
+LogDensityProblems.ADGradientWrapper
 LogDensityProblems.heuristic_chunks
 ```

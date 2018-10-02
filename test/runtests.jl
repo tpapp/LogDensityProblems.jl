@@ -123,5 +123,15 @@ end
     @test repr(∇p) == ("ForwardDiff AD wrapper for " * repr(p) * ", w/ chunk size 2")
 end
 
+
+@testset "AD via Flux" begin
+    f(x) = -3*abs2(x[1])
+    ℓ = TransformedLogDensity(as(Array, asℝ, 1), f)
+    ∇ℓ = FluxGradientLogDensity(ℓ)
+    x = randn(1)
+    @test logdensity(Value, ℓ, x) ≅ logdensity(Value, ∇ℓ, x)
+    @test logdensity(ValueGradient, ∇ℓ, x) ≅ ValueGradient(f(x), -6 .* x)
+end
+
 # also make the docs
 include("../docs/make.jl")
