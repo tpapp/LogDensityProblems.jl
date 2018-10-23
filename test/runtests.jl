@@ -123,7 +123,6 @@ end
     @test repr(∇p) == ("ForwardDiff AD wrapper for " * repr(p) * ", w/ chunk size 2")
 end
 
-
 @testset "AD via Flux" begin
     f(x) = -3*abs2(x[1])
     ℓ = TransformedLogDensity(as(Array, asℝ, 1), f)
@@ -131,6 +130,15 @@ end
     x = randn(1)
     @test logdensity(Value, ℓ, x) ≅ logdensity(Value, ∇ℓ, x)
     @test logdensity(ValueGradient, ∇ℓ, x) ≅ ValueGradient(f(x), -6 .* x)
+end
+
+@testset "@iffinite" begin
+    flag = [0]
+    f(x) = (y = LogDensityProblems.@iffinite x; flag[1] += 1; y)
+    @test f(NaN) ≡ NaN
+    @test flag == [0]
+    @test f(1) ≡ 1
+    @test flag == [1]
 end
 
 # also make the docs

@@ -6,7 +6,7 @@ struct FluxGradientLogDensity{L} <: ADGradientWrapper
     ℓ::L
 end
 
-show(io::IO, ℓ::FluxGradientLogDensity) = print(io, "Flux AD wrapper for ", ℓ.ℓ)
+show(io::IO, ∇ℓ::FluxGradientLogDensity) = print(io, "Flux AD wrapper for ", ∇ℓ.ℓ)
 
 function logdensity(::Type{ValueGradient}, ∇ℓ::FluxGradientLogDensity, x::RealVector)
     @unpack ℓ = ∇ℓ
