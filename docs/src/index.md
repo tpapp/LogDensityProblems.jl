@@ -20,11 +20,12 @@ LogDensityProblems.Value
 LogDensityProblems.ValueGradient
 ```
 
-# Benchmarking and diagnostics
+# Benchmarking, diagnostics, and utilities
 
 ```@docs
 LogDensityProblems.stresstest
 LogDensityProblems.benchmark_ForwardDiff_chunks
+LogDensityProblems.@iffinite
 ```
 
 # Internals

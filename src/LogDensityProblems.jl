@@ -214,4 +214,23 @@ function stresstest(ℓ::AbstractLogDensityProblem;
     failures
 end
 
+
+# utilities
+
+"""
+$(SIGNATURES)
+
+If `expr` evaluates to a non-finite value, `return` with that, otherwise evaluate to that
+value. Useful for returning early from non-finite likelihoods.
+
+Part of the API, but not exported.
+"""
+macro iffinite(expr)
+    quote
+        result = $(esc(expr))
+        isfinite(result) || return result
+        result
+    end
+end
+
 end # module
