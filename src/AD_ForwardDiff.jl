@@ -15,8 +15,6 @@ function show(io::IO, ℓ::ForwardDiffLogDensity)
           ", w/ chunk size ", length(ℓ.gradientconfig.seeds))
 end
 
-@inline _value_closure(ℓ) = x -> logdensity(Value, ℓ, x).value
-
 _anyargument(ℓ) = zeros(dimension(ℓ))
 
 _default_chunk(ℓ) = ForwardDiff.Chunk(dimension(ℓ))
