@@ -1,6 +1,4 @@
-export ForwardDiffLogDensity
-
-import ForwardDiff
+import .ForwardDiff
 
 
 # AD using ForwardDiff
@@ -35,9 +33,10 @@ Keywords are passed on to `ForwardDiff.GradientConfig` to customize the setup. I
 particular, chunk size can be set with a `chunk` keyword argument (accepting an integer or a
 `ForwardDiff.Chunk`).
 """
-function ForwardDiffLogDensity(ℓ::AbstractLogDensityProblem;
-                               chunk = _default_chunk(ℓ),
-                               gradientconfig = _default_gradientconfig(ℓ, chunk))
+function ADgradient(::Val{:ForwardDiff},
+                    ℓ::AbstractLogDensityProblem;
+                    chunk = _default_chunk(ℓ),
+                    gradientconfig = _default_gradientconfig(ℓ, chunk))
     ForwardDiffLogDensity(ℓ, gradientconfig)
 end
 
@@ -82,7 +81,7 @@ function benchmark_ForwardDiff_chunks(ℓ::AbstractLogDensityProblem;
                                       resulttype = ValueGradient,
                                       markprogress = true)
     map(chunks) do chunk
-        ∇ℓ = ForwardDiffLogDensity(ℓ; chunk = ForwardDiff.Chunk(chunk))
+        ∇ℓ = ADgradient(Val(:ForwardDiff), ℓ; chunk = ForwardDiff.Chunk(chunk))
         x = zeros(dimension(ℓ))
         markprogress && print(".")
         chunk => @belapsed logdensity($(resulttype), $(∇ℓ), $(x))

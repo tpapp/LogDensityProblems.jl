@@ -1,6 +1,6 @@
 module LogDensityProblems
 
-export logdensity, dimension, TransformedLogDensity, reject_logdensity
+export logdensity, dimension, TransformedLogDensity, reject_logdensity, ADgradient
 
 import Base: eltype, getproperty, propertynames, isfinite, isinf, show
 
@@ -10,6 +10,7 @@ using DocStringExtensions: SIGNATURES, TYPEDEF
 import DiffResults
 using Parameters: @unpack
 using Random: AbstractRNG, GLOBAL_RNG
+using Requires: @require
 
 using TransformVariables: AbstractTransform, transform_logdensity, RealVector
 import TransformVariables: dimension
@@ -196,14 +197,26 @@ abstract type ADGradientWrapper <: LogDensityWrapper end
 logdensity(::Type{Value}, fℓ::ADGradientWrapper, x::RealVector) =
     logdensity(Value, fℓ.ℓ, x)
 
+"""
+    ADgradient(kind, P::AbstractLogDensityProblem; args...)
+
+Wrap `P` using automatic differentiation to obtain a gradient.
+
+`kind` is usually a `Val` type, containing a symbol that refers to a package. See
+`methods(ADgradient)`, some methods are defined on demand when the relevant package is
+loaded.
+"""
+function ADgradient end
+
+@inline _value_closure(ℓ) = x -> logdensity(Value, ℓ, x).value
 
 
 # wrappers - specific
 
-@inline _value_closure(ℓ) = x -> logdensity(Value, ℓ, x).value
-
-include("AD_ForwardDiff.jl")
-include("AD_Flux.jl")
+function __init__()
+    @require ForwardDiff="f6369f11-7733-5829-9624-2563aa707210" include("AD_ForwardDiff.jl")
+    @require Flux="587475ba-b771-5e3f-ad9e-33799f191a9c" include("AD_Flux.jl")
+end
 
 
 # stress testing

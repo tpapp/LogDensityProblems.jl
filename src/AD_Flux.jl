@@ -1,10 +1,15 @@
-export FluxGradientLogDensity
-
-import Flux
+import .Flux
 
 struct FluxGradientLogDensity{L} <: ADGradientWrapper
     ℓ::L
 end
+
+"""
+$(SIGNATURES)
+
+Gradient using algorithmic/automatic differentiation via Flux.
+"""
+ADgradient(::Val{:Flux}, ℓ::AbstractLogDensityProblem) = FluxGradientLogDensity(ℓ)
 
 show(io::IO, ∇ℓ::FluxGradientLogDensity) = print(io, "Flux AD wrapper for ", ∇ℓ.ℓ)
 
