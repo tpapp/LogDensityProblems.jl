@@ -1,5 +1,7 @@
 module LogDensityProblems
 
+export logdensity, dimension, TransformedLogDensity, reject_logdensity
+
 import Base: eltype, getproperty, propertynames, isfinite, isinf, show
 
 using ArgCheck: @argcheck
@@ -11,8 +13,6 @@ using Random: AbstractRNG, GLOBAL_RNG
 
 using TransformVariables: AbstractTransform, transform_logdensity, RealVector
 import TransformVariables: dimension
-
-export logdensity, dimension, TransformedLogDensity
 
 
 # result types
@@ -80,6 +80,20 @@ isfinite(v::Union{Value, ValueGradient}) = isfinite(v.value)
 
 isinf(v::Union{Value, ValueGradient}) = isinf(v.value)
 
+"""
+$(TYPEDEF)
+
+Exception for unwinding the stack early for infeasible values. Use `reject_logdensity()`.
+"""
+struct RejectLogDensity <: Exception end
+
+"""
+$(SIGNATURES)
+
+Make wrappers return a `-Inf` log density (of the appropriate type).
+"""
+reject_logdensity() = throw(RejectLogDensity())
+
 
 # interface for problems
 
@@ -106,22 +120,22 @@ gradient, both returning eponymous types.
 function logdensity end
 
 """
-    TransformedLogDensity(transformation, logposterior)
+    TransformedLogDensity(transformation, logdensityfunction)
 
 A problem in Bayesian inference. Vectors of length `dimension(transformation)` are
 transformed into a general object `θ` (unrestricted type, but a named tuple is recommended
 for clean code), correcting for the log Jacobian determinant of the transformation.
 
-`logposterior(θ)` is expected to return *real numbers*. For zero densities or infeasible
+`logdensityfunction(θ)` is expected to return *real numbers*. For zero densities or infeasible
 `θ`s, `-Inf` or similar should be returned, but for efficiency of inference most methods
 recommend using `transformation` to avoid this.
 
-It is recommended that `logposterior` is a callable object that also
+It is recommended that `logdensityfunction` is a callable object that also
 encapsulates the data for the problem.
 """
 struct TransformedLogDensity{T <: AbstractTransform, L} <: AbstractLogDensityProblem
     transformation::T
-    logposterior::L
+    logdensityfunction::L
 end
 
 show(io::IO, ℓ::TransformedLogDensity) =
@@ -135,8 +149,13 @@ The dimension of the problem, ie the length of the vectors in its domain.
 dimension(p::TransformedLogDensity) = dimension(p.transformation)
 
 function logdensity(::Type{Value}, p::TransformedLogDensity, x::RealVector)
-    @unpack transformation, logposterior = p
-    Value(transform_logdensity(transformation, logposterior, x))
+    @unpack transformation, logdensityfunction = p
+    try
+        Value(transform_logdensity(transformation, logdensityfunction, x))
+    catch e
+        e isa RejectLogDensity || rethrow(e)
+        Value(-Inf)
+    end
 end
 
 
@@ -180,6 +199,8 @@ logdensity(::Type{Value}, fℓ::ADGradientWrapper, x::RealVector) =
 
 
 # wrappers - specific
+
+@inline _value_closure(ℓ) = x -> logdensity(Value, ℓ, x).value
 
 include("AD_ForwardDiff.jl")
 include("AD_Flux.jl")

@@ -9,6 +9,7 @@
 ```@docs
 TransformedLogDensity
 ForwardDiffLogDensity
+reject_logdensity
 ```
 
 # Inference
@@ -35,4 +36,5 @@ LogDensityProblems.AbstractLogDensityProblem
 LogDensityProblems.LogDensityWrapper
 LogDensityProblems.ADGradientWrapper
 LogDensityProblems.heuristic_chunks
+LogDensityProblems.RejectLogDensity
 ```

@@ -10,10 +10,7 @@ show(io::IO, ∇ℓ::FluxGradientLogDensity) = print(io, "Flux AD wrapper for ",
 
 function logdensity(::Type{ValueGradient}, ∇ℓ::FluxGradientLogDensity, x::RealVector)
     @unpack ℓ = ∇ℓ
-    f = x -> logdensity(Value, ℓ, x).value
-    @debug f = f(Flux.Tracker.TrackedReal.(x))
-    y, back = Flux.Tracker.forward(f, x)
-    @debug y = y
+    y, back = Flux.Tracker.forward(_value_closure(ℓ), x)
     yval = Flux.Tracker.data(y)
     ValueGradient(yval, isfinite(yval) ? first(Flux.Tracker.data.(back(1))) : similar(x))
 end

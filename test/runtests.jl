@@ -52,13 +52,11 @@ end
     p = TransformedLogDensity(t, logposterior)
     @test dimension(p) == 1
     @test p.transformation ≡ t
-    @test p.logposterior ≡ logposterior
 
     # gradient of a problem
     ∇p = ForwardDiffLogDensity(p)
     @test dimension(∇p) == 1
     @test ∇p.transformation ≡ t
-    @test ∇p.logposterior ≡ logposterior
 
     for _ in 1:100
         x = randn(dimension(t))
@@ -139,6 +137,18 @@ end
     @test flag == [0]
     @test f(1) ≡ 1
     @test flag == [1]
+end
+
+@testset "rejection" begin
+    f(x) = (z = first(x); z < 0 && reject_logdensity(); -abs2(z))
+    P = TransformedLogDensity(as(Array, 1), f)
+    @test logdensity(Value, P, [1.0]) ≅ Value(-1.0)
+    @test logdensity(Value, P, [-1.0]) ≅ Value(-Inf)
+    ∇P = ForwardDiffLogDensity(P)
+    @test logdensity(Value, ∇P, [1.0]) ≅ Value(-1.0)
+    @test logdensity(Value, ∇P, [-1.0]) ≅ Value(-Inf)
+    @test logdensity(ValueGradient, ∇P, [1.0]) ≅ ValueGradient(-1.0, [-2.0])
+    @test logdensity(ValueGradient, ∇P, [-1.0]) ≅ ValueGradient(-Inf, randn(1))
 end
 
 # also make the docs
