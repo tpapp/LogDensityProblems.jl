@@ -192,11 +192,9 @@ $(SIGNATURES)
 
 Test `ℓ` with random values.
 
-Random values are drawn from a standard multivariate Cauchy distribution, scaled with
-`scale` (which can be a scalar or a conformable vector).
-
-`N` elements are drawn, using `rng`. In case the call produces an error, the value is
-recorded as a failure, failures are returned at the end.
+`N` random vectors are drawn from a standard multivariate Cauchy distribution, scaled with
+`scale` (which can be a scalar or a conformable vector). In case the call produces an error,
+the value is recorded as a failure, which are returned by the function.
 
 Not exported, but part of the API.
 """
