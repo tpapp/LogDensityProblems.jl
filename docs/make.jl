@@ -1,4 +1,4 @@
-using Documenter, LogDensityProblems
+using Documenter, LogDensityProblems, Flux, ForwardDiff
 
 makedocs(
     sitename = "LogDensityProblems.jl",

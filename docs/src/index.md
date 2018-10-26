@@ -8,8 +8,13 @@
 
 ```@docs
 TransformedLogDensity
-ForwardDiffLogDensity
 reject_logdensity
+```
+
+# Gradient via automatic differentiation
+
+```@docs
+ADgradient
 ```
 
 # Inference
