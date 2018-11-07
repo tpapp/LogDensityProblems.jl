@@ -55,7 +55,7 @@ end
     @test p.transformation ≡ t
 
     # gradient of a problem
-    ∇p = ADgradient(Val(:ForwardDiff), p)
+    ∇p = ADgradient(:ForwardDiff, p)
     @test dimension(∇p) == 1
     @test ∇p.transformation ≡ t
 
@@ -75,7 +75,7 @@ end
     t = as(Array, 2)
     validx = x -> all(x .> 0)
     p = TransformedLogDensity(t, x -> validx(x) ?  sum(abs2, x)/2 : -Inf)
-    ∇p = ADgradient(Val(:ForwardDiff), p)
+    ∇p = ADgradient(:ForwardDiff, p)
 
     @test dimension(p) == dimension(∇p) == dimension(t)
     @test p.transformation ≡ ∇p.transformation ≡ t
@@ -117,7 +117,7 @@ end
 @testset "show" begin
     t = as(Array, 5)
     p = TransformedLogDensity(t, x -> -sum(abs2, x))
-    ∇p = ADgradient(Val(:ForwardDiff), p; chunk = 2)
+    ∇p = ADgradient(:ForwardDiff, p; chunk = 2)
     @test repr(p) == "TransformedLogDensity of dimension 5"
     @test repr(∇p) == ("ForwardDiff AD wrapper for " * repr(p) * ", w/ chunk size 2")
 end
@@ -125,7 +125,7 @@ end
 @testset "AD via Flux" begin
     f(x) = -3*abs2(x[1])
     ℓ = TransformedLogDensity(as(Array, asℝ, 1), f)
-    ∇ℓ = ADgradient(Val(:Flux), ℓ)
+    ∇ℓ = ADgradient(:Flux, ℓ)
     x = randn(1)
     @test logdensity(Value, ℓ, x) ≅ logdensity(Value, ∇ℓ, x)
     @test logdensity(ValueGradient, ∇ℓ, x) ≅ ValueGradient(f(x), -6 .* x)
@@ -145,7 +145,7 @@ end
     P = TransformedLogDensity(as(Array, 1), f)
     @test logdensity(Value, P, [1.0]) ≅ Value(-1.0)
     @test logdensity(Value, P, [-1.0]) ≅ Value(-Inf)
-    ∇P = ADgradient(Val(:ForwardDiff), P)
+    ∇P = ADgradient(:ForwardDiff, P)
     @test logdensity(Value, ∇P, [1.0]) ≅ Value(-1.0)
     @test logdensity(Value, ∇P, [-1.0]) ≅ Value(-Inf)
     @test logdensity(ValueGradient, ∇P, [1.0]) ≅ ValueGradient(-1.0, [-2.0])

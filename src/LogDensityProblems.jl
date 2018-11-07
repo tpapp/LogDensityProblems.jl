@@ -222,7 +222,7 @@ See `methods(ADgradient)`. Note that some methods are defined conditionally on t
 package being loaded.
 """
 ADgradient(kind::Symbol, P::AbstractLogDensityProblem; kwargs...) =
-    ADgradient(Val(:kind), P, args...)
+    ADgradient(Val{kind}(), P; kwargs...)
 
 """
 $(SIGNATURES)
