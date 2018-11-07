@@ -2,6 +2,9 @@ module LogDensityProblems
 
 export logdensity, dimension, TransformedLogDensity, reject_logdensity, ADgradient
 
+# reexports
+export random_arg
+
 import Base: eltype, getproperty, propertynames, isfinite, isinf, show
 
 using ArgCheck: @argcheck
@@ -12,8 +15,8 @@ using Parameters: @unpack
 using Random: AbstractRNG, GLOBAL_RNG
 using Requires: @require
 
-using TransformVariables: AbstractTransform, transform_logdensity, RealVector
-import TransformVariables: dimension
+using TransformVariables: AbstractTransform, transform_logdensity, RealVector, TransformVariables
+import TransformVariables: dimension, random_arg
 
 
 # result types
@@ -92,6 +95,12 @@ struct RejectLogDensity <: Exception end
 $(SIGNATURES)
 
 Make wrappers return a `-Inf` log density (of the appropriate type).
+
+!!! note
+
+    This is done by throwing an exception that is caught by the wrappers, unwinding the
+    stack. Using this function or returning `-Inf` is an implementation choice, do whatever
+    is most convenient.
 """
 reject_logdensity() = throw(RejectLogDensity())
 
@@ -198,16 +207,28 @@ logdensity(::Type{Value}, fℓ::ADGradientWrapper, x::RealVector) =
     logdensity(Value, fℓ.ℓ, x)
 
 """
-    ADgradient(kind, P::AbstractLogDensityProblem; args...)
+$(SIGNATURES)
 
 Wrap `P` using automatic differentiation to obtain a gradient.
 
-`kind` is usually a `Val` type, containing a symbol that refers to a package. See
-`methods(ADgradient)`, some methods are defined on demand when the relevant package is
-loaded.
-"""
-function ADgradient end
+`kind` is usually a `Val` type, containing a symbol that refers to a package. The symbol can
+also be used directly as eg
 
+```julia
+ADgradient(:ForwardDiff, P)
+```
+
+See `methods(ADgradient)`. Note that some methods are defined conditionally on the relevant
+package being loaded.
+"""
+ADgradient(kind::Symbol, P::AbstractLogDensityProblem; kwargs...) =
+    ADgradient(Val{kind}(), P; kwargs...)
+
+"""
+$(SIGNATURES)
+
+
+"""
 @inline _value_closure(ℓ) = x -> logdensity(Value, ℓ, x).value
 
 
@@ -220,6 +241,9 @@ end
 
 
 # stress testing
+
+random_arg(ℓ::AbstractLogDensityProblem; kwargs...) =
+    TransformVariables.random_reals(dimension(ℓ); kwargs...)
 
 """
 $(SIGNATURES)
@@ -236,7 +260,7 @@ function stresstest(ℓ::AbstractLogDensityProblem;
                     N = 1000, rng::AbstractRNG = GLOBAL_RNG, scale = 1, resulttype = Value)
     failures = Vector{Float64}[]
     for _ in 1:N
-        x = randn(dimension(ℓ))  .* scale ./ abs2(randn())
+        x = random_arg(ℓ; scale = scale, cauchy = true, rng = rng)
         try
             logdensity(resulttype, ℓ, x)
         catch e

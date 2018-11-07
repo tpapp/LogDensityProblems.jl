@@ -5,5 +5,6 @@ makedocs(
     modules = [LogDensityProblems],
     format = :html,
     clean = true,
+    checkdocs = :export,
     pages = Any["Overview" => "index.md"]
 )
