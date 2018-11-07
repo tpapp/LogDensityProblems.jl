@@ -60,7 +60,7 @@ end
     @test ∇p.transformation ≡ t
 
     for _ in 1:100
-        x = randn(dimension(t))
+        x = random_arg(p)
         θ, lj = transform_and_logjac(t, x)
         px = logdensity(Value, p, x)
         @test logpdf(d, θ.y) + lj ≈ (px::Value).value
@@ -81,7 +81,7 @@ end
     @test p.transformation ≡ ∇p.transformation ≡ t
 
     for _ in 1:100
-        x = randn(dimension(t))
+        x = random_arg(p)
         px = logdensity(Value, ∇p, x)
         ∇px = logdensity(ValueGradient, ∇p, x)
         @test px isa Value
