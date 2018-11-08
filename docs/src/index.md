@@ -1,23 +1,23 @@
-# Introduction
+## Introduction
 
 !!! note
 
     Currently this is just a placeholder that renders the docstrings.
 
-# Problem definition
+## Problem definition
 
 ```@docs
 TransformedLogDensity
 reject_logdensity
 ```
 
-# Gradient via automatic differentiation
+## Gradient via automatic differentiation
 
 ```@docs
 ADgradient
 ```
 
-# Inference
+## Inference
 
 ```@docs
 logdensity
@@ -26,7 +26,7 @@ LogDensityProblems.Value
 LogDensityProblems.ValueGradient
 ```
 
-# Benchmarking, diagnostics, and utilities
+## Benchmarking, diagnostics, and utilities
 
 ```@docs
 LogDensityProblems.stresstest
@@ -34,7 +34,7 @@ LogDensityProblems.benchmark_ForwardDiff_chunks
 LogDensityProblems.@iffinite
 ```
 
-# Internals
+## Internals
 
 ```@docs
 LogDensityProblems.AbstractLogDensityProblem
