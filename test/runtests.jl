@@ -151,6 +151,3 @@ end
     @test logdensity(ValueGradient, ∇P, [1.0]) ≅ ValueGradient(-1.0, [-2.0])
     @test logdensity(ValueGradient, ∇P, [-1.0]) ≅ ValueGradient(-Inf, randn(1))
 end
-
-# also make the docs
-include("../docs/make.jl")
