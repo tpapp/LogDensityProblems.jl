@@ -23,5 +23,13 @@ matrix:
 #before_script: # homebrew for mac
 #  - if [ $TRAVIS_OS_NAME = osx ]; then brew install gcc; fi
 after_success:
-  - julia docs/deploy.jl        # deploy documentation
   - julia submit_coverage.jl    # submit coverage
+jobs:
+  include:
+    - stage: "Documentation"
+      julia: 1.0
+      os: linux
+      script:
+        - julia --project=docs/ -e 'using Pkg; Pkg.instantiate(); Pkg.develop(PackageSpec(path=pwd()))'
+        - julia --project=docs/ docs/make.jl
+      after_success: skip
