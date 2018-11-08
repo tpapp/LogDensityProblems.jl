@@ -8,7 +8,3 @@ makedocs(
     checkdocs = :export,
     pages = Any["Overview" => "index.md"]
 )
-
-deploydocs(
-    repo = "github.com/tpapp/LogDensityProblems.jl.git",
-)
