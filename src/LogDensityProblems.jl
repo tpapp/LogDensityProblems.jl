@@ -224,12 +224,24 @@ package being loaded.
 ADgradient(kind::Symbol, P::AbstractLogDensityProblem; kwargs...) =
     ADgradient(Val{kind}(), P; kwargs...)
 
+function ADgradient(v::Val{kind}, P::AbstractLogDensityProblem; kwargs...) where kind
+    @info "Don't know how to AD with $(kind), consider `import $(kind)` if there is such a package."
+    throw(MethodError(ADgradient, (v, P)))
+end
+
 """
 $(SIGNATURES)
 
-
+A closure for the value of the log density.
 """
 @inline _value_closure(ℓ) = x -> logdensity(Value, ℓ, x).value
+
+"""
+$(SIGNATURES)
+
+Make a vector argument for transformation `ℓ` using a Float64 vector.
+"""
+@inline _vectorargument(ℓ) = zeros(dimension(ℓ))
 
 
 # wrappers - specific
@@ -237,6 +249,7 @@ $(SIGNATURES)
 function __init__()
     @require ForwardDiff="f6369f11-7733-5829-9624-2563aa707210" include("AD_ForwardDiff.jl")
     @require Flux="587475ba-b771-5e3f-ad9e-33799f191a9c" include("AD_Flux.jl")
+    @require ReverseDiff="37e2e3b7-166d-5795-8a7a-e32c996b4267" include("AD_ReverseDiff.jl")
 end
 
 

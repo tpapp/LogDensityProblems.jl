@@ -3,8 +3,7 @@ using LogDensityProblems: Value, ValueGradient
 using Test
 
 using Distributions
-import ForwardDiff
-import Flux
+import ForwardDiff, Flux, ReverseDiff
 using Parameters: @unpack
 using DocStringExtensions: SIGNATURES
 using TransformVariables
@@ -131,6 +130,15 @@ end
     @test logdensity(ValueGradient, ∇ℓ, x) ≅ ValueGradient(f(x), -6 .* x)
 end
 
+@testset "AD via ReverseDiff" begin
+    f(x) = -3*abs2(x[1])
+    ℓ = TransformedLogDensity(as(Array, asℝ, 1), f)
+    ∇ℓ = ADgradient(:ReverseDiff, ℓ)
+    x = randn(1)
+    @test logdensity(Value, ℓ, x) ≅ logdensity(Value, ∇ℓ, x)
+    @test logdensity(ValueGradient, ∇ℓ, x) ≅ ValueGradient(f(x), -6 .* x)
+end
+
 @testset "@iffinite" begin
     flag = [0]
     f(x) = (y = LogDensityProblems.@iffinite x; flag[1] += 1; y)
@@ -150,4 +158,10 @@ end
     @test logdensity(Value, ∇P, [-1.0]) ≅ Value(-Inf)
     @test logdensity(ValueGradient, ∇P, [1.0]) ≅ ValueGradient(-1.0, [-2.0])
     @test logdensity(ValueGradient, ∇P, [-1.0]) ≅ ValueGradient(-Inf, randn(1))
+end
+
+@testset "ADgradient missing method" begin
+    msg = "Don't know how to AD with Foo, consider `import Foo` if there is such a package."
+    P = TransformedLogDensity(as(Array, 1), x -> sum(abs2, x))
+    @test_logs((:info, msg), @test_throws(MethodError, ADgradient(:Foo, P)))
 end
