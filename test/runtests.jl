@@ -159,3 +159,9 @@ end
     @test logdensity(ValueGradient, ∇P, [1.0]) ≅ ValueGradient(-1.0, [-2.0])
     @test logdensity(ValueGradient, ∇P, [-1.0]) ≅ ValueGradient(-Inf, randn(1))
 end
+
+@testset "ADgradient missing method" begin
+    P = TransformedLogDensity(as(Array, 1), x -> sum(abs2, x))
+    @test_logs((:info, "Don't know how to AD with Foo, consider `import Foo` if there is such a package."),
+               @test_throws MethodError ADgradient(:Foo, P))
+end
