@@ -3,7 +3,6 @@ ArgCheck
 BenchmarkTools
 DiffResults
 DocStringExtensions
-Flux
-ForwardDiff
 Parameters
+Requires
 TransformVariables
