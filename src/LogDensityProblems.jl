@@ -226,7 +226,7 @@ ADgradient(kind::Symbol, P::AbstractLogDensityProblem; kwargs...) =
 
 function ADgradient(v::Val{kind}, P::AbstractLogDensityProblem; kwargs...) where kind
     @info "Don't know how to AD with $(kind), consider `import $(kind)` if there is such a package."
-    throw(MethodError(ADGradient, (v, P)))
+    throw(MethodError(ADgradient, (v, P)))
 end
 
 """

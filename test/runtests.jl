@@ -161,7 +161,7 @@ end
 end
 
 @testset "ADgradient missing method" begin
+    msg = "Don't know how to AD with Foo, consider `import Foo` if there is such a package."
     P = TransformedLogDensity(as(Array, 1), x -> sum(abs2, x))
-    @test_logs((:info, "Don't know how to AD with Foo, consider `import Foo` if there is such a package."),
-               @test_throws MethodError ADgradient(:Foo, P))
+    @test_logs((:info, msg), @test_throws(MethodError, ADgradient(:Foo, P)))
 end
