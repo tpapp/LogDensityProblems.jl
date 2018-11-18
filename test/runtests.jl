@@ -3,8 +3,7 @@ using LogDensityProblems: Value, ValueGradient
 using Test
 
 using Distributions
-import ForwardDiff
-import Flux
+import ForwardDiff, Flux, ReverseDiff
 using Parameters: @unpack
 using DocStringExtensions: SIGNATURES
 using TransformVariables
@@ -126,6 +125,15 @@ end
     f(x) = -3*abs2(x[1])
     ℓ = TransformedLogDensity(as(Array, asℝ, 1), f)
     ∇ℓ = ADgradient(:Flux, ℓ)
+    x = randn(1)
+    @test logdensity(Value, ℓ, x) ≅ logdensity(Value, ∇ℓ, x)
+    @test logdensity(ValueGradient, ∇ℓ, x) ≅ ValueGradient(f(x), -6 .* x)
+end
+
+@testset "AD via ReverseDiff" begin
+    f(x) = -3*abs2(x[1])
+    ℓ = TransformedLogDensity(as(Array, asℝ, 1), f)
+    ∇ℓ = ADgradient(:ReverseDiff, ℓ)
     x = randn(1)
     @test logdensity(Value, ℓ, x) ≅ logdensity(Value, ∇ℓ, x)
     @test logdensity(ValueGradient, ∇ℓ, x) ≅ ValueGradient(f(x), -6 .* x)

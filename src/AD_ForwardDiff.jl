@@ -13,12 +13,10 @@ function show(io::IO, ℓ::ForwardDiffLogDensity)
           ", w/ chunk size ", length(ℓ.gradientconfig.seeds))
 end
 
-_anyargument(ℓ) = zeros(dimension(ℓ))
-
 _default_chunk(ℓ) = ForwardDiff.Chunk(dimension(ℓ))
 
 _default_gradientconfig(ℓ, chunk::ForwardDiff.Chunk) =
-    ForwardDiff.GradientConfig(_value_closure(ℓ), _anyargument(ℓ), chunk)
+    ForwardDiff.GradientConfig(_value_closure(ℓ), _vectorargument(ℓ), chunk)
 
 _default_gradientconfig(ℓ, chunk::Integer) =
     _default_gradientconfig(ℓ, ForwardDiff.Chunk(chunk))
@@ -42,7 +40,7 @@ end
 
 function logdensity(::Type{ValueGradient}, fℓ::ForwardDiffLogDensity, x::RealVector)
     @unpack ℓ, gradientconfig = fℓ
-    result = DiffResults.GradientResult(_anyargument(ℓ)) # allocate a new result
+    result = DiffResults.GradientResult(_vectorargument(ℓ)) # allocate a new result
     result = ForwardDiff.gradient!(result, _value_closure(ℓ), x, gradientconfig)
     ValueGradient(DiffResults.value(result), DiffResults.gradient(result))
 end
