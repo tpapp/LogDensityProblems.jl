@@ -5,6 +5,8 @@ struct ReverseDiffLogDensity{L, C} <: ADGradientWrapper
     gradientconfig::C
 end
 
+show(io::IO, ℓ::ReverseDiffLogDensity) = print(io, "ReverseDiff AD wrapper for ", ℓ.ℓ)
+
 function ADgradient(::Val{:ReverseDiff}, ℓ::AbstractLogDensityProblem)
     cfg = ReverseDiff.GradientConfig(zeros(dimension(ℓ)))
     ReverseDiffLogDensity(ℓ, cfg)

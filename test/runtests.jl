@@ -116,9 +116,11 @@ end
 @testset "show" begin
     t = as(Array, 5)
     p = TransformedLogDensity(t, x -> -sum(abs2, x))
-    ∇p = ADgradient(:ForwardDiff, p; chunk = 2)
+    ∇pf = ADgradient(:ForwardDiff, p; chunk = 2)
+    ∇pr = ADgradient(:ReverseDiff, p)
     @test repr(p) == "TransformedLogDensity of dimension 5"
-    @test repr(∇p) == ("ForwardDiff AD wrapper for " * repr(p) * ", w/ chunk size 2")
+    @test repr(∇pf) == ("ForwardDiff AD wrapper for " * repr(p) * ", w/ chunk size 2")
+    @test repr(∇pr) == ("ReverseDiff AD wrapper for " * repr(p))
 end
 
 @testset "AD via Flux" begin
