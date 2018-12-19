@@ -20,8 +20,8 @@ matrix:
 #  apt: # apt-get for linux
 #    packages:
 #    - gfortran
-#before_script: # homebrew for mac
-#  - if [ $TRAVIS_OS_NAME = osx ]; then brew install gcc; fi
+before_script: # homebrew for mac
+ - julia -e 'import Pkg; pkg"add Zygote#master IRTools#master"'
 after_success:
   - julia submit_coverage.jl    # submit coverage
 jobs:

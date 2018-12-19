@@ -3,13 +3,17 @@ using LogDensityProblems: Value, ValueGradient
 using Test
 
 using Distributions
-import ForwardDiff, Flux, ReverseDiff
+import ForwardDiff, Flux, ReverseDiff, Zygote # for AD tests
 using Parameters: @unpack
 using DocStringExtensions: SIGNATURES
 using TransformVariables
 using Random: seed!
 
 seed!(1)
+
+####
+#### building blocks
+####
 
 """
     a ≅ b
@@ -123,6 +127,10 @@ end
     @test repr(∇pr) == ("ReverseDiff AD wrapper for " * repr(p))
 end
 
+####
+#### AD frameworks
+####
+
 @testset "AD via Flux" begin
     f(x) = -3*abs2(x[1])
     ℓ = TransformedLogDensity(as(Array, asℝ, 1), f)
@@ -139,6 +147,15 @@ end
     x = randn(1)
     @test logdensity(Value, ℓ, x) ≅ logdensity(Value, ∇ℓ, x)
     @test logdensity(ValueGradient, ∇ℓ, x) ≅ ValueGradient(f(x), -6 .* x)
+end
+
+@testset "AD via Zygote" begin
+    f(x) = -3*abs2(x[1])
+    ℓ = TransformedLogDensity(as(Array, asℝ, 1), f)
+    ∇ℓ = ADgradient(:Zygote, ℓ)
+    x = randn(1)
+    @test logdensity(Value, ℓ, x) ≅ logdensity(Value, ∇ℓ, x)
+    @test_skip logdensity(ValueGradient, ∇ℓ, x) ≅ ValueGradient(f(x), -6 .* x)
 end
 
 @testset "@iffinite" begin
