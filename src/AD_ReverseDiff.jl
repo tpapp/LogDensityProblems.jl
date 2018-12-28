@@ -7,7 +7,7 @@ end
 
 show(io::IO, ℓ::ReverseDiffLogDensity) = print(io, "ReverseDiff AD wrapper for ", ℓ.ℓ)
 
-function ADgradient(::Val{:ReverseDiff}, ℓ::AbstractLogDensityProblem)
+function ADgradient(::Val{:ReverseDiff}, ℓ)
     cfg = ReverseDiff.GradientConfig(zeros(dimension(ℓ)))
     ReverseDiffLogDensity(ℓ, cfg)
 end

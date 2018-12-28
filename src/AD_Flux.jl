@@ -9,7 +9,7 @@ $(SIGNATURES)
 
 Gradient using algorithmic/automatic differentiation via Flux.
 """
-ADgradient(::Val{:Flux}, ℓ::AbstractLogDensityProblem) = FluxGradientLogDensity(ℓ)
+ADgradient(::Val{:Flux}, ℓ) = FluxGradientLogDensity(ℓ)
 
 show(io::IO, ∇ℓ::FluxGradientLogDensity) = print(io, "Flux AD wrapper for ", ∇ℓ.ℓ)
 

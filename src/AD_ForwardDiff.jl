@@ -31,8 +31,7 @@ Keywords are passed on to `ForwardDiff.GradientConfig` to customize the setup. I
 particular, chunk size can be set with a `chunk` keyword argument (accepting an integer or a
 `ForwardDiff.Chunk`).
 """
-function ADgradient(::Val{:ForwardDiff},
-                    ℓ::AbstractLogDensityProblem;
+function ADgradient(::Val{:ForwardDiff}, ℓ;
                     chunk = _default_chunk(ℓ),
                     gradientconfig = _default_gradientconfig(ℓ, chunk))
     ForwardDiffLogDensity(ℓ, gradientconfig)
@@ -74,7 +73,7 @@ seconds, as determined by `BenchmarkTools.@belapsed`.
 
 This function is not exported, but part of the API.
 """
-function benchmark_ForwardDiff_chunks(ℓ::AbstractLogDensityProblem;
+function benchmark_ForwardDiff_chunks(ℓ;
                                       chunks = heuristic_chunks(dimension(ℓ), 20),
                                       resulttype = ValueGradient,
                                       markprogress = true)
