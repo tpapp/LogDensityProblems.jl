@@ -2,9 +2,6 @@ module LogDensityProblems
 
 export logdensity, dimension, TransformedLogDensity, reject_logdensity, ADgradient
 
-# reexports
-export random_arg
-
 import Base: eltype, getproperty, propertynames, isfinite, isinf, show
 
 using ArgCheck: @argcheck
@@ -18,8 +15,9 @@ using Requires: @require
 using TransformVariables: AbstractTransform, transform_logdensity, RealVector, TransformVariables
 import TransformVariables: dimension, random_arg
 
-
-# result types
+####
+#### result types
+####
 
 struct Value{T <: Real}
     value::T
@@ -104,8 +102,9 @@ Make wrappers return a `-Inf` log density (of the appropriate type).
 """
 reject_logdensity() = throw(RejectLogDensity())
 
-
-# interface for problems
+####
+#### interface for problems
+####
 
 """
 Abstract type for log density representations, which support the following
@@ -168,8 +167,9 @@ function logdensity(::Type{Value}, p::TransformedLogDensity, x::RealVector)
     end
 end
 
-
-# wrappers — general
+####
+#### wrappers — general
+####
 
 """
 An abstract type that wraps another log density in its field `ℓ`.
@@ -221,10 +221,10 @@ ADgradient(:ForwardDiff, P)
 See `methods(ADgradient)`. Note that some methods are defined conditionally on the relevant
 package being loaded.
 """
-ADgradient(kind::Symbol, P::AbstractLogDensityProblem; kwargs...) =
+ADgradient(kind::Symbol, P; kwargs...) =
     ADgradient(Val{kind}(), P; kwargs...)
 
-function ADgradient(v::Val{kind}, P::AbstractLogDensityProblem; kwargs...) where kind
+function ADgradient(v::Val{kind}, P; kwargs...) where kind
     @info "Don't know how to AD with $(kind), consider `import $(kind)` if there is such a package."
     throw(MethodError(ADgradient, (v, P)))
 end
@@ -243,8 +243,9 @@ Make a vector argument for transformation `ℓ` using a Float64 vector.
 """
 @inline _vectorargument(ℓ) = zeros(dimension(ℓ))
 
-
-# wrappers - specific
+####
+#### wrappers - specific
+####
 
 function __init__()
     @require ForwardDiff="f6369f11-7733-5829-9624-2563aa707210" include("AD_ForwardDiff.jl")
@@ -252,11 +253,11 @@ function __init__()
     @require ReverseDiff="37e2e3b7-166d-5795-8a7a-e32c996b4267" include("AD_ReverseDiff.jl")
 end
 
-
-# stress testing
+####
+#### stress testing
+####
 
-random_arg(ℓ::AbstractLogDensityProblem; kwargs...) =
-    TransformVariables.random_reals(dimension(ℓ); kwargs...)
+random_arg(ℓ; kwargs...) = TransformVariables.random_reals(dimension(ℓ); kwargs...)
 
 """
 $(SIGNATURES)
@@ -269,8 +270,7 @@ the value is recorded as a failure, which are returned by the function.
 
 Not exported, but part of the API.
 """
-function stresstest(ℓ::AbstractLogDensityProblem;
-                    N = 1000, rng::AbstractRNG = GLOBAL_RNG, scale = 1, resulttype = Value)
+function stresstest(ℓ; N = 1000, rng::AbstractRNG = GLOBAL_RNG, scale = 1, resulttype = Value)
     failures = Vector{Float64}[]
     for _ in 1:N
         x = random_arg(ℓ; scale = scale, cauchy = true, rng = rng)
@@ -283,8 +283,9 @@ function stresstest(ℓ::AbstractLogDensityProblem;
     failures
 end
 
-
-# utilities
+####
+#### utilities
+####
 
 """
 $(SIGNATURES)
