@@ -2,7 +2,7 @@ module LogDensityProblems
 
 export logdensity, dimension, TransformedLogDensity, reject_logdensity, ADgradient
 
-import Base: eltype, getproperty, propertynames, isfinite, isinf, show
+import Base: eltype, isfinite, isinf, show
 
 using ArgCheck: @argcheck
 using BenchmarkTools: @belapsed
@@ -183,17 +183,6 @@ Forwards properties other than its field names to `ℓ`.
 abstract type LogDensityWrapper <: AbstractLogDensityProblem end
 
 dimension(w::LogDensityWrapper) = dimension(w.ℓ)
-
-propertynames(w::LogDensityWrapper) =
-    unique((fieldnames(typeof(w))..., propertynames(w.ℓ)...))
-
-function getproperty(w::LogDensityWrapper, name::Symbol)
-    if name ∈ fieldnames(typeof(w))
-        getfield(w, name)
-    else
-        getproperty(w.ℓ, name)
-    end
-end
 
 """
 An abstract type that wraps another log density for calculating the gradient via AD.
