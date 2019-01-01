@@ -1,8 +1,9 @@
 module LogDensityProblems
 
-export logdensity, dimension, TransformedLogDensity, reject_logdensity, ADgradient
+export logdensity, dimension, TransformedLogDensity, get_transformation, reject_logdensity,
+    ADgradient, get_parent
 
-import Base: eltype, getproperty, propertynames, isfinite, isinf, show
+import Base: eltype, isfinite, isinf, show
 
 using ArgCheck: @argcheck
 using BenchmarkTools: @belapsed
@@ -150,6 +151,8 @@ end
 show(io::IO, ℓ::TransformedLogDensity) =
     print(io, "TransformedLogDensity of dimension $(dimension(ℓ.transformation))")
 
+get_transformation(p::TransformedLogDensity) = p.transformation
+
 """
 $(SIGNATURES)
 
@@ -177,23 +180,12 @@ An abstract type that wraps another log density in its field `ℓ`.
 # Notes
 
 Implementation detail, *not exported*.
-
-Forwards properties other than its field names to `ℓ`.
 """
 abstract type LogDensityWrapper <: AbstractLogDensityProblem end
 
-dimension(w::LogDensityWrapper) = dimension(w.ℓ)
+get_parent(w::LogDensityWrapper) = w.ℓ
 
-propertynames(w::LogDensityWrapper) =
-    unique((fieldnames(typeof(w))..., propertynames(w.ℓ)...))
-
-function getproperty(w::LogDensityWrapper, name::Symbol)
-    if name ∈ fieldnames(typeof(w))
-        getfield(w, name)
-    else
-        getproperty(w.ℓ, name)
-    end
-end
+dimension(w::LogDensityWrapper) = dimension(get_parent(w))
 
 """
 An abstract type that wraps another log density for calculating the gradient via AD.
