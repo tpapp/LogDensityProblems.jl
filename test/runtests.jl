@@ -51,12 +51,12 @@ end
     # a Bayesian problem
     p = TransformedLogDensity(t, logposterior)
     @test dimension(p) == 1
-    @test p.transformation ≡ t
+    @test get_transformation(p) ≡ t
 
     # gradient of a problem
     ∇p = ADgradient(:ForwardDiff, p)
     @test dimension(∇p) == 1
-    @test ∇p.transformation ≡ t
+    @test get_transformation(get_parent(∇p)) ≡ t
 
     for _ in 1:100
         x = random_arg(p)
@@ -77,7 +77,7 @@ end
     ∇p = ADgradient(:ForwardDiff, p)
 
     @test dimension(p) == dimension(∇p) == dimension(t)
-    @test p.transformation ≡ ∇p.transformation ≡ t
+    @test get_transformation(p) ≡ get_transformation(get_parent(∇p)) ≡ t
 
     for _ in 1:100
         x = random_arg(p)
