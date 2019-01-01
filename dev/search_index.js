@@ -141,7 +141,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Overview",
     "title": "LogDensityProblems.LogDensityWrapper",
     "category": "type",
-    "text": "An abstract type that wraps another log density in its field ℓ.\n\nNotes\n\nImplementation detail, not exported.\n\nForwards properties other than its field names to ℓ.\n\n\n\n\n\n"
+    "text": "An abstract type that wraps another log density in its field ℓ.\n\nNotes\n\nImplementation detail, not exported.\n\n\n\n\n\n"
 },
 
 {
