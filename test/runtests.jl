@@ -171,3 +171,15 @@ end
     P = TransformedLogDensity(as(Array, 1), x -> sum(abs2, x))
     @test_logs((:info, msg), @test_throws(MethodError, ADgradient(:Foo, P)))
 end
+
+@testset "reject wrapper" begin
+    f(_) = NaN
+    P = TransformedLogDensity(as(Array, 1), f)
+    ∇P = ADgradient(:ForwardDiff, P)
+    x = [1.0]
+    @test_throws ArgumentError logdensity(Value, P, x)
+    @test_throws ArgumentError logdensity(ValueGradient, ∇P, x)
+    R = LogDensityRejectErrors(∇P)
+    @test logdensity(Value, R, x) ≅ Value(-Inf)
+    @test logdensity(ValueGradient, R, x) ≅ ValueGradient(-Inf, x)
+end
