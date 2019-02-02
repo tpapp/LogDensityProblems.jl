@@ -121,11 +121,19 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "#LogDensityProblems.LogDensityRejectErrors",
+    "page": "Overview",
+    "title": "LogDensityProblems.LogDensityRejectErrors",
+    "category": "type",
+    "text": "LogDensityRejectErrors(ℓ)\n\nWrap a logdensity ℓ so that errors are caught and replaced with a - value.\n\nNote\n\nUse cautiously, as catching errors can mask errors in your code. The recommended use case is for catching quirks with AD.\n\n\n\n\n\n"
+},
+
+{
     "location": "#Benchmarking,-diagnostics,-and-utilities-1",
     "page": "Overview",
     "title": "Benchmarking, diagnostics, and utilities",
     "category": "section",
-    "text": "LogDensityProblems.stresstest\nLogDensityProblems.benchmark_ForwardDiff_chunks\nLogDensityProblems.@iffinite"
+    "text": "LogDensityProblems.stresstest\nLogDensityProblems.benchmark_ForwardDiff_chunks\nLogDensityProblems.@iffinite\nLogDensityRejectErrors"
 },
 
 {
