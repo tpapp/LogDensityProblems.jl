@@ -32,6 +32,7 @@ LogDensityProblems.ValueGradient
 LogDensityProblems.stresstest
 LogDensityProblems.benchmark_ForwardDiff_chunks
 LogDensityProblems.@iffinite
+LogDensityRejectErrors
 ```
 
 ## Internals

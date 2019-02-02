@@ -1,7 +1,7 @@
 module LogDensityProblems
 
-export logdensity, dimension, TransformedLogDensity, get_transformation, reject_logdensity,
-    ADgradient, get_parent
+export logdensity, dimension, TransformedLogDensity, get_transformation, get_parent,
+    reject_logdensity, LogDensityRejectErrors, ADgradient
 
 import Base: eltype, isfinite, isinf, show
 
@@ -186,6 +186,36 @@ abstract type LogDensityWrapper <: AbstractLogDensityProblem end
 get_parent(w::LogDensityWrapper) = w.ℓ
 
 dimension(w::LogDensityWrapper) = dimension(get_parent(w))
+
+####
+#### wrappers -- convenience
+####
+
+"""
+    LogDensityRejectErrors(ℓ)
+
+Wrap a logdensity `ℓ` so that errors are caught and replaced with a ``-∞`` value.
+
+# Note
+
+Use cautiously, as catching errors can mask errors in your code. The recommended use case is
+for catching quirks with AD.
+"""
+struct LogDensityRejectErrors{L} <: LogDensityWrapper
+    ℓ::L
+end
+
+minus_inf_like(::Type{Value}, x) = Value(convert(eltype(x), -Inf))
+
+minus_inf_like(::Type{ValueGradient}, x) = ValueGradient(convert(eltype(x), -Inf), similar(x))
+
+function logdensity(kind, w::LogDensityRejectErrors, x)
+    try
+        logdensity(kind, get_parent(w), x)
+    catch
+        minus_inf_like(kind, x)
+    end
+end
 
 """
 An abstract type that wraps another log density for calculating the gradient via AD.
