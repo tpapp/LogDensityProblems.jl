@@ -177,13 +177,44 @@ end
 end
 
 @testset "reject wrapper" begin
-    f(_) = Inf
+
+    # function that throws various errors
+    function f(x)
+        y = first(x)
+        if y > 1
+            throw(DomainError(x))
+        elseif y > 0
+            throw(ArgumentError("bad"))
+        elseif y > -1
+            y
+        else
+            Inf
+        end
+    end
+    x_dom = [1.5]
+    x_arg = [0.5]
+    x_inf = [-1.5]
+    x_ok = [-0.5]
+
+    # test unwrapped (for consistency)
     P = TransformedLogDensity(as(Array, 1), f)
     ∇P = ADgradient(:ForwardDiff, P)
-    x = [1.0]
-    @test_throws InvalidLogDensityException(0, Inf) logdensity(Value, P, x)
-    @test_throws InvalidLogDensityException logdensity(ValueGradient, ∇P, x)
-    R = LogDensityRejectErrors(∇P)
-    @test logdensity(Value, R, x) ≅ Value(-Inf)
-    @test logdensity(ValueGradient, R, x) ≅ ValueGradient(-Inf, x)
+    @test_throws InvalidLogDensityException(0, Inf) logdensity(Value, P, x_inf)
+    @test_throws InvalidLogDensityException logdensity(ValueGradient, ∇P, x_inf)
+    @test_throws ArgumentError logdensity(Value, P, x_arg)
+    @test_throws ArgumentError logdensity(ValueGradient, ∇P, x_arg)
+    @test_throws DomainError logdensity(Value, P, x_dom)
+    @test_throws DomainError logdensity(ValueGradient, ∇P, x_dom)
+    @test logdensity(Value, P, x_ok) ≅ Value(-0.5)
+    @test logdensity(ValueGradient, ∇P, x_ok) ≅ ValueGradient(-0.5, [1.0])
+
+    # test wrapped -- we catch domain and invalid log density errors
+    R = LogDensityRejectErrors{Union{DomainError,InvalidLogDensityException}}(∇P)
+    @test logdensity(Value, R, x_inf) ≅ logdensity(Value, R, x_dom) ≅ Value(-Inf)
+    @test logdensity(ValueGradient, R, x_inf) ≅ logdensity(ValueGradient, R, x_dom) ≅
+        ValueGradient(-Inf, x_inf)
+    @test_throws ArgumentError logdensity(Value, R, x_arg)
+    @test_throws ArgumentError logdensity(ValueGradient, R, x_arg)
+    @test logdensity(Value, R, x_ok) ≅ Value(-0.5)
+    @test logdensity(ValueGradient, R, x_ok) ≅ ValueGradient(-0.5, [1.0])
 end

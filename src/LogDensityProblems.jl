@@ -221,29 +221,40 @@ TransformVariables.dimension(w::LogDensityWrapper) = dimension(parent(w))
 #### wrappers -- convenience
 ####
 
-"""
-    LogDensityRejectErrors(ℓ)
+struct LogDensityRejectErrors{E, L} <: LogDensityWrapper
+    ℓ::L
+end
 
-Wrap a logdensity `ℓ` so that errors are caught and replaced with a ``-∞`` value.
+"""
+$(SIGNATURES)
+
+Wrap a logdensity `ℓ` so that errors `<: E` are caught and replaced with a ``-∞`` value.
+
+`E` defaults to `InvalidLogDensityExceptions`.
 
 # Note
 
 Use cautiously, as catching errors can mask errors in your code. The recommended use case is
-for catching quirks with AD.
+for catching quirks and corner cases of AD. See also [`stresstest`](@ref) as an alternative
+to using this wrapper.
 """
-struct LogDensityRejectErrors{L} <: LogDensityWrapper
-    ℓ::L
-end
+LogDensityRejectErrors{E}(ℓ::L) where {E,L} = LogDensityRejectErrors{E,L}(ℓ)
+
+LogDensityRejectErrors(ℓ) = LogDensityRejectErrors{InvalidLogDensityException}(ℓ)
 
 minus_inf_like(::Type{Value}, x) = Value(convert(eltype(x), -Inf))
 
 minus_inf_like(::Type{ValueGradient}, x) = ValueGradient(convert(eltype(x), -Inf), similar(x))
 
-function logdensity(kind, w::LogDensityRejectErrors, x)
+function logdensity(kind, w::LogDensityRejectErrors{E}, x) where E
     try
         logdensity(kind, parent(w), x)
-    catch
-        minus_inf_like(kind, x)
+    catch e
+        if e isa E
+            minus_inf_like(kind, x)
+        else
+            rethrow(e)
+        end
     end
 end
 
