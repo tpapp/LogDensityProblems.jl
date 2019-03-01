@@ -1,6 +1,6 @@
 module LogDensityProblems
 
-export logdensity, dimension, TransformedLogDensity,
+export logdensity, dimension, TransformedLogDensity, InvalidLogDensityException,
     reject_logdensity, LogDensityRejectErrors, ADgradient,
     get_transformation, get_parent # deprecated
 
@@ -22,10 +22,29 @@ using TransformVariables: AbstractTransform, transform_logdensity, RealVector,
 #### result types
 ####
 
+"""
+$(TYPEDEF)
+
+Thrown when `Value` or `ValueGradient` is called with invalid arguments.
+"""
+struct InvalidLogDensityException{T} <: Exception
+    "Location information: 0 is the value, positive integers are the gradient."
+    index::Int
+    "The invalid value."
+    value::T
+end
+
+function Base.showerror(io::IO, ex::InvalidLogDensityException)
+    @unpack index, value = ex
+    print(io, "InvalidLogDensityException: ",
+          index == 0 ? "value" : "gradient $(index)",
+          " is $(value)")
+end
+
 struct Value{T <: Real}
     value::T
     function Value{T}(value::T) where {T <: Real}
-        @argcheck isfinite(value) || value == -Inf
+        @argcheck (isfinite(value) || value == -Inf) InvalidLogDensityException(0, value)
         new{T}(value)
     end
 end
@@ -50,10 +69,15 @@ struct ValueGradient{T, V <: AbstractVector{T}}
     gradient::V
     function ValueGradient{T,V}(value::T, gradient::V
                                 ) where {T <: Real, V <: AbstractVector{T}}
-        @argcheck (isfinite(value) && all(isfinite, gradient))|| value == -Inf
+        if value ≠ -Inf
+            @argcheck isfinite(value) InvalidLogDensityException(0, value)
+            invalid = findfirst(!isfinite, gradient)
+            if invalid ≢ nothing
+                throw(InvalidLogDensityException(invalid, gradient[invalid]))
+            end
+        end
         new{T,V}(value, gradient)
     end
-
 end
 
 """
@@ -158,8 +182,6 @@ end
 function Base.show(io::IO, ℓ::TransformedLogDensity)
     print(io, "TransformedLogDensity of dimension $(dimension(ℓ.transformation))")
 end
-
-get_transformation(p::TransformedLogDensity) = p.transformation
 
 """
 $(SIGNATURES)
