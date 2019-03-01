@@ -21,7 +21,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Overview",
     "title": "LogDensityProblems.TransformedLogDensity",
     "category": "type",
-    "text": "TransformedLogDensity(transformation, logdensityfunction)\n\nA problem in Bayesian inference. Vectors of length dimension(transformation) are transformed into a general object θ (unrestricted type, but a named tuple is recommended for clean code), correcting for the log Jacobian determinant of the transformation.\n\nlogdensityfunction(θ) is expected to return real numbers. For zero densities or infeasible θs, -Inf or similar should be returned, but for efficiency of inference most methods recommend using transformation to avoid this.\n\nIt is recommended that logdensityfunction is a callable object that also encapsulates the data for the problem.\n\n\n\n\n\n"
+    "text": "TransformedLogDensity(transformation, log_density_function)\n\nA problem in Bayesian inference. Vectors of length dimension(transformation) are transformed into a general object θ (unrestricted type, but a named tuple is recommended for clean code), correcting for the log Jacobian determinant of the transformation.\n\nIt is recommended that log_density_function is a callable object that also encapsulates the data for the problem.\n\nlog_density_function(θ) is expected to return real numbers. For zero densities or infeasible θs, -Inf or similar should be returned, but for efficiency of inference most methods recommend using transformation to avoid this.\n\nUse the property accessors ℓ.transformation and ℓ.log_density_function to access the arguments of ℓ::TransformedLogDensity, these are part of the API.\n\n\n\n\n\n"
 },
 
 {
@@ -141,7 +141,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Overview",
     "title": "LogDensityProblems.AbstractLogDensityProblem",
     "category": "type",
-    "text": "Abstract type for log density representations, which support the following interface for ℓ::AbstractLogDensityProblem:\n\ndimension returns the dimension of the domain of ℓ,\nlogdensity evaluates the log density ℓ at a given point.\n\n\n\n\n\n"
+    "text": "Abstract type for log density representations, which support the following interface for ℓ::AbstractLogDensityProblem:\n\ndimension returns the dimension of the domain of ℓ,\nlogdensity evaluates the log density ℓ at a given point.\n\nSee also LogDensityProblems.stresstest for stress testing.\n\n\n\n\n\n"
 },
 
 {
