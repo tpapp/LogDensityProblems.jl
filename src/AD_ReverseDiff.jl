@@ -7,7 +7,7 @@ end
 
 Base.show(io::IO, ℓ::ReverseDiffLogDensity) = print(io, "ReverseDiff AD wrapper for ", ℓ.ℓ)
 
-function logdensity(::Type{ValueGradient}, fℓ::ReverseDiffLogDensity, x::RealVector)
+function logdensity(::Type{ValueGradient}, fℓ::ReverseDiffLogDensity, x::AbstractVector)
     @unpack ℓ, gradientconfig = fℓ
     result = DiffResults.GradientResult(_vectorargument(ℓ)) # allocate a new result
     result = ReverseDiff.gradient!(result, _value_closure(ℓ), x, gradientconfig)
@@ -24,7 +24,7 @@ function Base.show(io::IO, ℓ::ReverseDiffTapeLogDensity)
     print(io, "ReverseDiff AD wrapper (compiled tape) for ", ℓ.ℓ)
 end
 
-function logdensity(::Type{ValueGradient}, fℓ::ReverseDiffTapeLogDensity, x::RealVector)
+function logdensity(::Type{ValueGradient}, fℓ::ReverseDiffTapeLogDensity, x::AbstractVector)
     @unpack result_buffer, compiled_tape = fℓ
     result = ReverseDiff.gradient!(result_buffer, compiled_tape, x)
     v = DiffResults.value(result)

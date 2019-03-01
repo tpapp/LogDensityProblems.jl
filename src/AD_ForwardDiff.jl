@@ -37,7 +37,7 @@ function ADgradient(::Val{:ForwardDiff}, ℓ;
     ForwardDiffLogDensity(ℓ, gradientconfig)
 end
 
-function logdensity(::Type{ValueGradient}, fℓ::ForwardDiffLogDensity, x::RealVector)
+function logdensity(::Type{ValueGradient}, fℓ::ForwardDiffLogDensity, x::AbstractVector)
     @unpack ℓ, gradientconfig = fℓ
     result = DiffResults.GradientResult(_vectorargument(ℓ)) # allocate a new result
     result = ForwardDiff.gradient!(result, _value_closure(ℓ), x, gradientconfig)

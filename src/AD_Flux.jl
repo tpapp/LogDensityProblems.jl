@@ -13,7 +13,7 @@ ADgradient(::Val{:Flux}, ℓ) = FluxGradientLogDensity(ℓ)
 
 Base.show(io::IO, ∇ℓ::FluxGradientLogDensity) = print(io, "Flux AD wrapper for ", ∇ℓ.ℓ)
 
-function logdensity(::Type{ValueGradient}, ∇ℓ::FluxGradientLogDensity, x::RealVector)
+function logdensity(::Type{ValueGradient}, ∇ℓ::FluxGradientLogDensity, x::AbstractVector)
     @unpack ℓ = ∇ℓ
     y, back = Flux.Tracker.forward(_value_closure(ℓ), x)
     yval = Flux.Tracker.data(y)

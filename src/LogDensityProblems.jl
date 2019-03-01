@@ -12,8 +12,8 @@ using Parameters: @unpack
 using Random: AbstractRNG, GLOBAL_RNG
 using Requires: @require
 
-using TransformVariables: AbstractTransform, transform_logdensity, RealVector,
-    TransformVariables, dimension, random_reals, random_arg
+using TransformVariables: AbstractTransform, transform_logdensity, TransformVariables,
+    dimension, random_reals, random_arg
 
 @deprecate get_parent(transformation) Base.parent(transformation)
 @deprecate get_transformation(wrapper) wrapper.transformation
@@ -190,13 +190,14 @@ The dimension of the problem, ie the length of the vectors in its domain.
 """
 TransformVariables.dimension(p::TransformedLogDensity) = dimension(p.transformation)
 
-function logdensity(::Type{Value}, p::TransformedLogDensity, x::RealVector)
+function logdensity(::Type{Value}, p::TransformedLogDensity, x::AbstractVector)
     @unpack transformation, log_density_function = p
     try
         Value(transform_logdensity(transformation, log_density_function, x))
     catch e
         e isa RejectLogDensity || rethrow(e)
-        Value(-Inf)
+        # type stable if log_density_function preserves eltype of x
+        Value(convert(eltype(x), -Inf))
     end
 end
 
@@ -266,8 +267,9 @@ Automatically defines a `logdensity(Value, ...)` method, subtypes should define 
 """
 abstract type ADGradientWrapper <: LogDensityWrapper end
 
-logdensity(::Type{Value}, fℓ::ADGradientWrapper, x::RealVector) =
+function logdensity(::Type{Value}, fℓ::ADGradientWrapper, x::AbstractVector)
     logdensity(Value, fℓ.ℓ, x)
+end
 
 """
 $(SIGNATURES)
