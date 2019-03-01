@@ -70,6 +70,10 @@ end
     end
 end
 
+@testset "chunk heuristics for ForwardDiff" begin
+    @test LogDensityProblems.heuristic_chunks(82) == vcat(1:4:81, [82])
+end
+
 @testset "-∞ log densities" begin
     t = as(Array, 2)
     validx = x -> all(x .> 0)
