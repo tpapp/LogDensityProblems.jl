@@ -112,6 +112,36 @@ Base.isinf(v::Union{Value, ValueGradient}) = isinf(v.value)
 """
 $(TYPEDEF)
 
+A wrapper for a vector that indicates that the vector *may* be used for the gradient in a
+`ValueGradient`. Consequences are undefined if it is modified later, implicitly the caller
+guarantees that it will not be used for anything else while the gradient is retrieved.
+
+See [`logdensity`](@ref).
+"""
+struct ValueGradientBuffer{T <: Real, V <: AbstractVector{T}}
+    buffer::V
+    function ValueGradientBuffer(buffer::AbstractVector{T}) where T
+        @argcheck T <: Real && isconcretetype(T)
+        new{T,typeof(buffer)}(buffer)
+    end
+end
+
+###
+### conversion to DiffResult types — these are not part of the API
+###
+
+function DiffResults.MutableDiffResult(vgb::ValueGradientBuffer)
+    @unpack buffer = vgb
+    DiffResults.MutableDiffResult(first(buffer), (buffer, ))
+end
+
+function ValueGradient(result::DiffResults.DiffResult)
+    ValueGradient(DiffResults.value(result), DiffResults.gradient(result))
+end
+
+"""
+$(TYPEDEF)
+
 Exception for unwinding the stack early for infeasible values. Use `reject_logdensity()`.
 """
 struct RejectLogDensity <: Exception end
@@ -148,14 +178,33 @@ abstract type AbstractLogDensityProblem end
 """
     logdensity(resulttype, ℓ, x)
 
-Evaluate the [`AbstractLogDensityProblem`](@ref) `ℓ` at `x`, which has length
-compatible with its [`dimension`](@ref).
+Evaluate the [`AbstractLogDensityProblem`](@ref) `ℓ` at `x`, which has length compatible
+with its [`dimension`](@ref).
 
-The argument `resulttype` determines the type of the result. [`Value`]@(ref)
-results in the log density, while [`ValueGradient`](@ref) also calculates the
-gradient, both returning eponymous types.
+The argument `resulttype` determines the type of the result:
+
+1. [`Real`](@ref) for an unchecked evaluation of the log density which should return a
+`::Real` number (that could be `NaN`, `Inf`, etc),
+
+1. [`Value`](@ref) for a checked log density, returning a `Value`,
+
+2. [`ValueGradient`](@ref) also calculates the gradient, returning a `ValueGradient`,
+
+3. [`ValueGradientBuffer`](@ref) calculates a `ValueGradient` *potentially* (but always
+consistently for argument types) using the provided buffer for the gradient. In this case,
+the element type of the array may determine the result element type.
+
+# Implementation note
+
+Types should just define the methods for `Real` and `ValueGradientBuffer` (when applicable),
+as `ValueGradient` fall back to these, respectively.
 """
-function logdensity end
+logdensity(::Type{Value}, ℓ, x::AbstractVector) = Value(logdensity(Real, ℓ, x))
+
+function logdensity(::Type{ValueGradient}, ℓ, x::AbstractVector{T}) where T
+    S = (T <: Real && isconcretetype(T)) ? T : Float64
+    logdensity(ValueGradientBuffer(Vector{S}(undef, dimension(ℓ))), ℓ, x)
+end
 
 """
     TransformedLogDensity(transformation, log_density_function)
@@ -190,14 +239,14 @@ The dimension of the problem, ie the length of the vectors in its domain.
 """
 TransformVariables.dimension(p::TransformedLogDensity) = dimension(p.transformation)
 
-function logdensity(::Type{Value}, p::TransformedLogDensity, x::AbstractVector)
+function logdensity(::Type{Real}, p::TransformedLogDensity, x::AbstractVector)
     @unpack transformation, log_density_function = p
     try
-        Value(transform_logdensity(transformation, log_density_function, x))
+        transform_logdensity(transformation, log_density_function, x)
     catch e
         e isa RejectLogDensity || rethrow(e)
         # type stable if log_density_function preserves eltype of x
-        Value(convert(eltype(x), -Inf))
+        convert(eltype(x), -Inf)
     end
 end
 
@@ -243,11 +292,15 @@ LogDensityRejectErrors{E}(ℓ::L) where {E,L} = LogDensityRejectErrors{E,L}(ℓ)
 
 LogDensityRejectErrors(ℓ) = LogDensityRejectErrors{InvalidLogDensityException}(ℓ)
 
-minus_inf_like(::Type{Value}, x) = Value(convert(eltype(x), -Inf))
+minus_inf_like(::Type{Real}, x) = convert(eltype(x), -Inf)
 
-minus_inf_like(::Type{ValueGradient}, x) = ValueGradient(convert(eltype(x), -Inf), similar(x))
+minus_inf_like(::Type{Value}, x) = Value(minus_inf_like(Real, x))
 
-function logdensity(kind, w::LogDensityRejectErrors{E}, x) where E
+minus_inf_like(::Type{ValueGradient}, x) = ValueGradient(minus_inf_like(Real, x), similar(x))
+
+minus_inf_like(vgb::ValueGradientBuffer, x) = ValueGradient(minus_inf_like(Real, x), vgb.buffer)
+
+function _logdensity_reject_errors(kind, w::LogDensityRejectErrors{E}, x) where {E}
     try
         logdensity(kind, parent(w), x)
     catch e
@@ -259,6 +312,19 @@ function logdensity(kind, w::LogDensityRejectErrors{E}, x) where E
     end
 end
 
+logdensity(::Type{Real}, w::LogDensityRejectErrors, x::AbstractVector) =
+    _logdensity_reject_errors(Real, w, x)
+
+logdensity(::Type{Value}, w::LogDensityRejectErrors, x::AbstractVector) =
+    _logdensity_reject_errors(Value, w, x)
+
+logdensity(::Type{ValueGradient}, w::LogDensityRejectErrors, x::AbstractVector) =
+    _logdensity_reject_errors(ValueGradient, w, x)
+
+function logdensity(vgb::ValueGradientBuffer, w::LogDensityRejectErrors, x::AbstractVector)
+    _logdensity_reject_errors(vgb, w, x)
+end
+
 """
 An abstract type that wraps another log density for calculating the gradient via AD.
 
@@ -267,9 +333,17 @@ Automatically defines a `logdensity(Value, ...)` method, subtypes should define 
 """
 abstract type ADGradientWrapper <: LogDensityWrapper end
 
-function logdensity(::Type{Value}, fℓ::ADGradientWrapper, x::AbstractVector)
-    logdensity(Value, fℓ.ℓ, x)
+function logdensity(::Type{Real}, fℓ::ADGradientWrapper, x::AbstractVector)
+    logdensity(Real, fℓ.ℓ, x)
 end
+
+"""
+$(SIGNATUES)
+
+Return a closure that evaluetes the log density. Call this function to ensure stable tags
+for `ForwardDiff`.
+"""
+_logdensity_closure(ℓ) = x -> logdensity(Real, ℓ, x)
 
 """
 $(SIGNATURES)
@@ -293,20 +367,6 @@ function ADgradient(v::Val{kind}, P; kwargs...) where kind
     @info "Don't know how to AD with $(kind), consider `import $(kind)` if there is such a package."
     throw(MethodError(ADgradient, (v, P)))
 end
-
-"""
-$(SIGNATURES)
-
-A closure for the value of the log density.
-"""
-@inline _value_closure(ℓ) = x -> logdensity(Value, ℓ, x).value
-
-"""
-$(SIGNATURES)
-
-Make a vector argument for transformation `ℓ` using a Float64 vector.
-"""
-@inline _vectorargument(ℓ) = zeros(dimension(ℓ))
 
 ####
 #### wrappers - specific

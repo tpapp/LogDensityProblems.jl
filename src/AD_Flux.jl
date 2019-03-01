@@ -15,7 +15,12 @@ Base.show(io::IO, ∇ℓ::FluxGradientLogDensity) = print(io, "Flux AD wrapper f
 
 function logdensity(::Type{ValueGradient}, ∇ℓ::FluxGradientLogDensity, x::AbstractVector)
     @unpack ℓ = ∇ℓ
-    y, back = Flux.Tracker.forward(_value_closure(ℓ), x)
+    y, back = Flux.Tracker.forward(_logdensity_closure(ℓ), x)
     yval = Flux.Tracker.data(y)
     ValueGradient(yval, isfinite(yval) ? first(Flux.Tracker.data.(back(1))) : similar(x))
+end
+
+function logdensity(::ValueGradientBuffer, ∇ℓ::FluxGradientLogDensity, x::AbstractVector)
+    # NOTE this implementation ignores the buffer
+    logdensity(ValueGradient, ∇ℓ, x)
 end
