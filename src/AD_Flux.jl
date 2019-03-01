@@ -11,7 +11,7 @@ Gradient using algorithmic/automatic differentiation via Flux.
 """
 ADgradient(::Val{:Flux}, ℓ) = FluxGradientLogDensity(ℓ)
 
-show(io::IO, ∇ℓ::FluxGradientLogDensity) = print(io, "Flux AD wrapper for ", ∇ℓ.ℓ)
+Base.show(io::IO, ∇ℓ::FluxGradientLogDensity) = print(io, "Flux AD wrapper for ", ∇ℓ.ℓ)
 
 function logdensity(::Type{ValueGradient}, ∇ℓ::FluxGradientLogDensity, x::RealVector)
     @unpack ℓ = ∇ℓ

@@ -1,9 +1,8 @@
 module LogDensityProblems
 
-export logdensity, dimension, TransformedLogDensity, get_transformation, get_parent,
-    reject_logdensity, LogDensityRejectErrors, ADgradient
-
-import Base: eltype, isfinite, isinf, show
+export logdensity, dimension, TransformedLogDensity,
+    reject_logdensity, LogDensityRejectErrors, ADgradient,
+    get_transformation, get_parent # deprecated
 
 using ArgCheck: @argcheck
 using BenchmarkTools: @belapsed
@@ -13,8 +12,11 @@ using Parameters: @unpack
 using Random: AbstractRNG, GLOBAL_RNG
 using Requires: @require
 
-using TransformVariables: AbstractTransform, transform_logdensity, RealVector, TransformVariables
-import TransformVariables: dimension, random_arg
+using TransformVariables: AbstractTransform, transform_logdensity, RealVector,
+    TransformVariables, dimension, random_reals, random_arg
+
+@deprecate get_parent(transformation) Base.parent(transformation)
+@deprecate get_transformation(wrapper) wrapper.transformation
 
 ####
 #### result types
@@ -41,7 +43,7 @@ See also [`logdensity`](@ref).
 """
 Value(value::T) where {T <: Real} = Value{T}(value)
 
-eltype(::Type{Value{T}}) where T = T
+Base.eltype(::Type{Value{T}}) where T = T
 
 struct ValueGradient{T, V <: AbstractVector{T}}
     value::T
@@ -77,11 +79,11 @@ function ValueGradient(value::T1, gradient::AbstractVector{T2}) where {T1,T2}
     ValueGradient(T(value), T ≡ T2 ? gradient : map(T, gradient))
 end
 
-eltype(::Type{ValueGradient{T,V}}) where {T,V} = T
+Base.eltype(::Type{ValueGradient{T,V}}) where {T,V} = T
 
-isfinite(v::Union{Value, ValueGradient}) = isfinite(v.value)
+Base.isfinite(v::Union{Value, ValueGradient}) = isfinite(v.value)
 
-isinf(v::Union{Value, ValueGradient}) = isinf(v.value)
+Base.isinf(v::Union{Value, ValueGradient}) = isinf(v.value)
 
 """
 $(TYPEDEF)
@@ -114,6 +116,8 @@ interface for `ℓ::AbstractLogDensityProblem`:
 1. [`dimension`](@ref) returns the *dimension* of the domain of `ℓ`,
 
 2. [`logdensity`](@ref) evaluates the log density `ℓ` at a given point.
+
+See also [`LogDensityProblems.stresstest`](@ref) for stress testing.
 """
 abstract type AbstractLogDensityProblem end
 
@@ -130,26 +134,30 @@ gradient, both returning eponymous types.
 function logdensity end
 
 """
-    TransformedLogDensity(transformation, logdensityfunction)
+    TransformedLogDensity(transformation, log_density_function)
 
 A problem in Bayesian inference. Vectors of length `dimension(transformation)` are
 transformed into a general object `θ` (unrestricted type, but a named tuple is recommended
 for clean code), correcting for the log Jacobian determinant of the transformation.
 
-`logdensityfunction(θ)` is expected to return *real numbers*. For zero densities or infeasible
-`θ`s, `-Inf` or similar should be returned, but for efficiency of inference most methods
-recommend using `transformation` to avoid this.
+It is recommended that `log_density_function` is a callable object that also encapsulates
+the data for the problem.
 
-It is recommended that `logdensityfunction` is a callable object that also
-encapsulates the data for the problem.
+`log_density_function(θ)` is expected to return *real numbers*. For zero densities or
+infeasible `θ`s, `-Inf` or similar should be returned, but for efficiency of inference most
+methods recommend using `transformation` to avoid this.
+
+Use the property accessors `ℓ.transformation` and `ℓ.log_density_function` to access the
+arguments of `ℓ::TransformedLogDensity`, these are part of the API.
 """
 struct TransformedLogDensity{T <: AbstractTransform, L} <: AbstractLogDensityProblem
     transformation::T
-    logdensityfunction::L
+    log_density_function::L
 end
 
-show(io::IO, ℓ::TransformedLogDensity) =
+function Base.show(io::IO, ℓ::TransformedLogDensity)
     print(io, "TransformedLogDensity of dimension $(dimension(ℓ.transformation))")
+end
 
 get_transformation(p::TransformedLogDensity) = p.transformation
 
@@ -158,12 +166,12 @@ $(SIGNATURES)
 
 The dimension of the problem, ie the length of the vectors in its domain.
 """
-dimension(p::TransformedLogDensity) = dimension(p.transformation)
+TransformVariables.dimension(p::TransformedLogDensity) = dimension(p.transformation)
 
 function logdensity(::Type{Value}, p::TransformedLogDensity, x::RealVector)
-    @unpack transformation, logdensityfunction = p
+    @unpack transformation, log_density_function = p
     try
-        Value(transform_logdensity(transformation, logdensityfunction, x))
+        Value(transform_logdensity(transformation, log_density_function, x))
     catch e
         e isa RejectLogDensity || rethrow(e)
         Value(-Inf)
@@ -183,9 +191,9 @@ Implementation detail, *not exported*.
 """
 abstract type LogDensityWrapper <: AbstractLogDensityProblem end
 
-get_parent(w::LogDensityWrapper) = w.ℓ
+Base.parent(w::LogDensityWrapper) = w.ℓ
 
-dimension(w::LogDensityWrapper) = dimension(get_parent(w))
+TransformVariables.dimension(w::LogDensityWrapper) = dimension(parent(w))
 
 ####
 #### wrappers -- convenience
@@ -211,7 +219,7 @@ minus_inf_like(::Type{ValueGradient}, x) = ValueGradient(convert(eltype(x), -Inf
 
 function logdensity(kind, w::LogDensityRejectErrors, x)
     try
-        logdensity(kind, get_parent(w), x)
+        logdensity(kind, parent(w), x)
     catch
         minus_inf_like(kind, x)
     end
@@ -279,7 +287,7 @@ end
 #### stress testing
 ####
 
-random_arg(ℓ; kwargs...) = TransformVariables.random_reals(dimension(ℓ); kwargs...)
+TransformVariables.random_arg(ℓ; kwargs...) = random_reals(dimension(ℓ); kwargs...)
 
 """
 $(SIGNATURES)

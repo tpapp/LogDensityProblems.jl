@@ -8,7 +8,7 @@ struct ForwardDiffLogDensity{L, C} <: ADGradientWrapper
     gradientconfig::C
 end
 
-function show(io::IO, ℓ::ForwardDiffLogDensity)
+function Base.show(io::IO, ℓ::ForwardDiffLogDensity)
     print(io, "ForwardDiff AD wrapper for ", ℓ.ℓ,
           ", w/ chunk size ", length(ℓ.gradientconfig.seeds))
 end
