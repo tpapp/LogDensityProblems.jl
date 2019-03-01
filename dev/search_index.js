@@ -125,7 +125,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Overview",
     "title": "LogDensityProblems.LogDensityRejectErrors",
     "category": "type",
-    "text": "LogDensityRejectErrors(ℓ)\n\nWrap a logdensity ℓ so that errors are caught and replaced with a - value.\n\nNote\n\nUse cautiously, as catching errors can mask errors in your code. The recommended use case is for catching quirks with AD.\n\n\n\n\n\n"
+    "text": "LogDensityRejectErrors(ℓ)\n\n\nWrap a logdensity ℓ so that errors <: E are caught and replaced with a - value.\n\nE defaults to InvalidLogDensityExceptions.\n\nNote\n\nUse cautiously, as catching errors can mask errors in your code. The recommended use case is for catching quirks and corner cases of AD. See also stresstest as an alternative to using this wrapper.\n\n\n\n\n\n"
 },
 
 {
