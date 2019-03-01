@@ -5,7 +5,7 @@ struct ReverseDiffLogDensity{L, C} <: ADGradientWrapper
     gradientconfig::C
 end
 
-show(io::IO, ℓ::ReverseDiffLogDensity) = print(io, "ReverseDiff AD wrapper for ", ℓ.ℓ)
+Base.show(io::IO, ℓ::ReverseDiffLogDensity) = print(io, "ReverseDiff AD wrapper for ", ℓ.ℓ)
 
 function logdensity(::Type{ValueGradient}, fℓ::ReverseDiffLogDensity, x::RealVector)
     @unpack ℓ, gradientconfig = fℓ
@@ -20,7 +20,9 @@ struct ReverseDiffTapeLogDensity{L, R, T} <: ADGradientWrapper
     compiled_tape::T
 end
 
-show(io::IO, ℓ::ReverseDiffTapeLogDensity) = print(io, "ReverseDiff AD wrapper (compiled tape) for ", ℓ.ℓ)
+function Base.show(io::IO, ℓ::ReverseDiffTapeLogDensity)
+    print(io, "ReverseDiff AD wrapper (compiled tape) for ", ℓ.ℓ)
+end
 
 function logdensity(::Type{ValueGradient}, fℓ::ReverseDiffTapeLogDensity, x::RealVector)
     @unpack result_buffer, compiled_tape = fℓ
