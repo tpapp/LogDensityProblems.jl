@@ -37,7 +37,7 @@ end
 function Base.showerror(io::IO, ex::InvalidLogDensityException)
     @unpack index, value = ex
     print(io, "InvalidLogDensityException: ",
-          index == 0 ? "value" : "gradient $(index)",
+          index == 0 ? "value" : "gradient[$(index)]",
           " is $(value)")
 end
 

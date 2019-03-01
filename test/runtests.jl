@@ -43,6 +43,14 @@ end
     @test ValueGradient(1, [2.0]) ≅ ValueGradient(1.0, [2.0]) # conversion
 end
 
+@testset "error printing" begin
+    @test sprint(showerror, InvalidLogDensityException(0, NaN)) ==
+        "InvalidLogDensityException: value is NaN"
+    @test sprint(showerror, InvalidLogDensityException(1, Inf)) ==
+        "InvalidLogDensityException: gradient[1] is Inf"
+end
+
+
 @testset "transformed Bayesian problem" begin
     t = as((y = asℝ₊, ))
     d = LogNormal(1.0, 2.0)
@@ -217,4 +225,8 @@ end
     @test_throws ArgumentError logdensity(ValueGradient, R, x_arg)
     @test logdensity(Value, R, x_ok) ≅ Value(-0.5)
     @test logdensity(ValueGradient, R, x_ok) ≅ ValueGradient(-0.5, [1.0])
+
+    # test constructor
+    @test LogDensityRejectErrors{InvalidLogDensityException}(∇P) ≡
+        LogDensityRejectErrors(∇P)
 end
