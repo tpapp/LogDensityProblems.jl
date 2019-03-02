@@ -1,8 +1,7 @@
 module LogDensityProblems
 
 export logdensity, dimension, TransformedLogDensity, InvalidLogDensityException,
-    reject_logdensity, LogDensityRejectErrors, ADgradient,
-    get_transformation, get_parent # deprecated
+    reject_logdensity, LogDensityRejectErrors, ADgradient
 
 using ArgCheck: @argcheck
 using BenchmarkTools: @belapsed
@@ -14,9 +13,6 @@ using Requires: @require
 
 using TransformVariables: AbstractTransform, transform_logdensity, TransformVariables,
     dimension, random_reals, random_arg
-
-@deprecate get_parent(transformation) Base.parent(transformation)
-@deprecate get_transformation(wrapper) wrapper.transformation
 
 ####
 #### result types
