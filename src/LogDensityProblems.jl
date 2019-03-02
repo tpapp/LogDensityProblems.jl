@@ -196,8 +196,8 @@ the element type of the array may determine the result element type.
 
 # Implementation note
 
-Types should just define the methods for `Real` and `ValueGradientBuffer` (when applicable),
-as `ValueGradient` fall back to these, respectively.
+Most types should just define the methods for `Real` and `ValueGradientBuffer` (when
+applicable), as `Value` and `ValueGradient` fall back to these, respectively.
 """
 logdensity(::Type{Value}, ℓ, x::AbstractVector) = Value(logdensity(Real, ℓ, x))
 
