@@ -338,7 +338,7 @@ function logdensity(::Type{Real}, fℓ::ADGradientWrapper, x::AbstractVector)
 end
 
 """
-$(SIGNATUES)
+$(SIGNATURES)
 
 Return a closure that evaluetes the log density. Call this function to ensure stable tags
 for `ForwardDiff`.
