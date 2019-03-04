@@ -194,24 +194,55 @@ end
     # test unwrapped (for consistency)
     P = TransformedLogDensity(as(Array, 1), f)
     ∇P = ADgradient(:ForwardDiff, P)
+    vgb = ValueGradientBuffer(randn(1))
+
+    # -∞, not a valid value
+    @test logdensity(Real, P, x_inf) == Inf
     @test_throws InvalidLogDensityException(0, Inf) logdensity(Value, P, x_inf)
     @test_throws InvalidLogDensityException logdensity(ValueGradient, ∇P, x_inf)
+    @test_throws InvalidLogDensityException logdensity(vgb, ∇P, x_inf)
+
+    # ArgumentError
+    @test_throws ArgumentError logdensity(Real, P, x_arg)
     @test_throws ArgumentError logdensity(Value, P, x_arg)
     @test_throws ArgumentError logdensity(ValueGradient, ∇P, x_arg)
+    @test_throws ArgumentError logdensity(vgb, ∇P, x_arg)
+
+    # DomainError
+    @test_throws DomainError logdensity(Real, P, x_dom)
     @test_throws DomainError logdensity(Value, P, x_dom)
     @test_throws DomainError logdensity(ValueGradient, ∇P, x_dom)
+    @test_throws DomainError logdensity(vgb, ∇P, x_dom)
+
+    # valid values
+    @test logdensity(Real, P, x_ok) == -0.5
     @test logdensity(Value, P, x_ok) ≅ Value(-0.5)
     @test logdensity(ValueGradient, ∇P, x_ok) ≅ ValueGradient(-0.5, [1.0])
+    @test logdensity(vgb, ∇P, x_ok) ≅ ValueGradient(-0.5, [1.0])
 
     # test wrapped -- we catch domain and invalid log density errors
     R = LogDensityRejectErrors{Union{DomainError,InvalidLogDensityException}}(∇P)
+
+    # InvalidLogDensityException and DomainError converted to -∞
+    @test logdensity(Real, R, x_inf) == Inf # no error
+    @test logdensity(Real, R, x_dom) == -Inf # converted
     @test logdensity(Value, R, x_inf) ≅ logdensity(Value, R, x_dom) ≅ Value(-Inf)
     @test logdensity(ValueGradient, R, x_inf) ≅ logdensity(ValueGradient, R, x_dom) ≅
         ValueGradient(-Inf, x_inf)
+    @test logdensity(vgb, R, x_inf) ≅ logdensity(vgb, R, x_dom) ≅ ValueGradient(-Inf, x_inf)
+
+    # ArgumentError passes through
+    @test_throws ArgumentError logdensity(Real, R, x_arg)
     @test_throws ArgumentError logdensity(Value, R, x_arg)
     @test_throws ArgumentError logdensity(ValueGradient, R, x_arg)
+    @test_throws ArgumentError logdensity(vgb, R, x_arg)
+
+    # valid values pass through
+
+    @test logdensity(Real, R, x_ok) == -0.5
     @test logdensity(Value, R, x_ok) ≅ Value(-0.5)
     @test logdensity(ValueGradient, R, x_ok) ≅ ValueGradient(-0.5, [1.0])
+    @test logdensity(vgb, R, x_ok) ≅ ValueGradient(-0.5, [1.0])
 
     # test constructor
     @test LogDensityRejectErrors{InvalidLogDensityException}(∇P) ≡
