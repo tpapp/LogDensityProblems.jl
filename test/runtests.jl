@@ -50,7 +50,6 @@ end
         "InvalidLogDensityException: gradient[1] is Inf"
 end
 
-
 @testset "transformed Bayesian problem" begin
     t = as((y = asℝ₊, ))
     d = LogNormal(1.0, 2.0)
