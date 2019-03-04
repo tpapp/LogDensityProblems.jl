@@ -1,15 +1,16 @@
-using LogDensityProblems
-using LogDensityProblems: Value, ValueGradient
-using Test
+using LogDensityProblems, Test, Distributions, TransformVariables
+using LogDensityProblems: Value, ValueGradient, ValueGradientBuffer
 
-using Distributions
 import ForwardDiff, Flux, ReverseDiff
 using Parameters: @unpack
-using DocStringExtensions: SIGNATURES
 using TransformVariables
-using Random: seed!
+import Random
 
-seed!(1)
+####
+#### test setup and utilities
+####
+
+Random.seed!(1)
 
 """
     a ≅ b
@@ -20,6 +21,10 @@ Compare fields and types (strictly), for unit testing.
 ≅(a::Value{T}, b::Value{T}) where {T} = a.value == b.value
 ≅(a::ValueGradient{T,V}, b::ValueGradient{T,V}) where {T,V} =
     a.value == b.value && (a.value == -Inf || a.gradient == b.gradient)
+
+####
+#### result types
+####
 
 @testset "Value constructor" begin
     @test eltype(Value(1.0)) ≡ Float64
@@ -50,6 +55,9 @@ end
         "InvalidLogDensityException: gradient[1] is Inf"
 end
 
+####
+#### transformed Bayesian problem
+####
 
 @testset "transformed Bayesian problem" begin
     t = as((y = asℝ₊, ))
@@ -76,10 +84,6 @@ end
         @test (∇px::ValueGradient).value ≈ px.value
         @test ∇px.gradient ≈ [ForwardDiff.derivative(x -> logpdf(d, exp(x)) + x, x[1])]
     end
-end
-
-@testset "chunk heuristics for ForwardDiff" begin
-    @test LogDensityProblems.heuristic_chunks(82) == vcat(1:4:81, [82])
 end
 
 @testset "-∞ log densities" begin
@@ -137,26 +141,6 @@ end
     @test repr(ADgradient(:Flux, p)) == ("Flux AD wrapper for " * repr(p))
 end
 
-@testset "AD via Flux" begin
-    f(x) = -3*abs2(x[1])
-    ℓ = TransformedLogDensity(as(Array, asℝ, 1), f)
-    ∇ℓ = ADgradient(:Flux, ℓ)
-    x = randn(1)
-    @test logdensity(Value, ℓ, x) ≅ logdensity(Value, ∇ℓ, x)
-    @test logdensity(ValueGradient, ∇ℓ, x) ≅ ValueGradient(f(x), -6 .* x)
-end
-
-@testset "AD via ReverseDiff" begin
-    f(x) = -3*abs2(x[1])
-    ℓ = TransformedLogDensity(as(Array, asℝ, 1), f)
-    ∇ℓ = ADgradient(:ReverseDiff, ℓ)
-    ∇ℓt = ADgradient(:ReverseDiff, ℓ; tape = true)
-    x = randn(1)
-    @test logdensity(Value, ℓ, x) ≅ logdensity(Value, ∇ℓ, x) ≅ logdensity(Value, ∇ℓt, x)
-    @test logdensity(ValueGradient, ∇ℓ, x) ≅ ValueGradient(f(x), -6 .* x) ≅
-        logdensity(ValueGradient, ∇ℓt, x)
-end
-
 @testset "@iffinite" begin
     flag = [0]
     f(x) = (y = LogDensityProblems.@iffinite x; flag[1] += 1; y)
@@ -176,12 +160,6 @@ end
     @test logdensity(Value, ∇P, [-1.0]) ≅ Value(-Inf)
     @test logdensity(ValueGradient, ∇P, [1.0]) ≅ ValueGradient(-1.0, [-2.0])
     @test logdensity(ValueGradient, ∇P, [-1.0]) ≅ ValueGradient(-Inf, randn(1))
-end
-
-@testset "ADgradient missing method" begin
-    msg = "Don't know how to AD with Foo, consider `import Foo` if there is such a package."
-    P = TransformedLogDensity(as(Array, 1), x -> sum(abs2, x))
-    @test_logs((:info, msg), @test_throws(MethodError, ADgradient(:Foo, P)))
 end
 
 @testset "reject wrapper" begin
@@ -229,4 +207,74 @@ end
     # test constructor
     @test LogDensityRejectErrors{InvalidLogDensityException}(∇P) ≡
         LogDensityRejectErrors(∇P)
+end
+
+####
+#### various AD tests
+####
+
+struct TestLogDensity end
+TransformVariables.dimension(::TestLogDensity) = 3
+test_logdensity(x) = any(x .< 0) ? -Inf : -2*abs2(x[1]) - 3*abs2(x[2]) - 5*abs2(x[3])
+test_gradient(x) = x .* [-4, -6, -10]
+LogDensityProblems.logdensity(::Type{Real}, ::TestLogDensity, x) = test_logdensity(x)
+
+@testset "AD via ForwardDiff" begin
+    ∇ℓ = ADgradient(:ForwardDiff, TestLogDensity())
+    @test dimension(∇ℓ) == 3
+    buffer = randn(3)
+    vb = ValueGradientBuffer(buffer)
+    for _ in 1:100
+        x = randn(3)
+        @test logdensity(Real, ∇ℓ, x) ≈ test_logdensity(x)
+        @test logdensity(Value, ∇ℓ, x) ≅ Value(test_logdensity(x))
+        vg = ValueGradient(test_logdensity(x), test_gradient(x))
+        @test logdensity(ValueGradient, ∇ℓ, x) ≅ vg
+        vg2 = logdensity(vb, ∇ℓ, x)
+        @test vg2.gradient ≡ buffer
+        @test vg2 ≅ vg
+    end
+end
+
+@testset "AD via Flux" begin
+    ∇ℓ = ADgradient(:Flux, TestLogDensity())
+    @test dimension(∇ℓ) == 3
+    buffer = randn(3)
+    vb = ValueGradientBuffer(buffer)
+    for _ in 1:100
+        x = randn(3)
+        @test logdensity(Real, ∇ℓ, x) ≈ test_logdensity(x)
+        @test logdensity(Value, ∇ℓ, x) ≅ Value(test_logdensity(x))
+        vg = ValueGradient(test_logdensity(x), test_gradient(x))
+        @test logdensity(ValueGradient, ∇ℓ, x) ≅ vg
+        # NOTE don't test buffer ≡, as that is not implemented for Flux
+        @test logdensity(vb, ∇ℓ, x) ≅ vg
+    end
+end
+
+@testset "AD via ReverseDiff" begin
+    ∇ℓ = ADgradient(:ReverseDiff, TestLogDensity())
+    @test dimension(∇ℓ) == 3
+    buffer = randn(3)
+    vb = ValueGradientBuffer(buffer)
+    for _ in 1:100
+        x = randn(3)
+        @test logdensity(Real, ∇ℓ, x) ≈ test_logdensity(x)
+        @test logdensity(Value, ∇ℓ, x) ≅ Value(test_logdensity(x))
+        vg = ValueGradient(test_logdensity(x), test_gradient(x))
+        @test logdensity(ValueGradient, ∇ℓ, x) ≅ vg
+        vg2 = logdensity(vb, ∇ℓ, x)
+        @test vg2.gradient ≡ buffer
+        @test vg2 ≅ vg
+    end
+end
+
+@testset "ADgradient missing method" begin
+    msg = "Don't know how to AD with Foo, consider `import Foo` if there is such a package."
+    P = TransformedLogDensity(as(Array, 1), x -> sum(abs2, x))
+    @test_logs((:info, msg), @test_throws(MethodError, ADgradient(:Foo, P)))
+end
+
+@testset "chunk heuristics for ForwardDiff" begin
+    @test LogDensityProblems.heuristic_chunks(82) == vcat(1:4:81, [82])
 end
