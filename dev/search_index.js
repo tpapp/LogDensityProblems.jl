@@ -61,7 +61,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Overview",
     "title": "LogDensityProblems.logdensity",
     "category": "function",
-    "text": "logdensity(resulttype, ℓ, x)\n\nEvaluate the AbstractLogDensityProblem ℓ at x, which has length compatible with its dimension.\n\nThe argument resulttype determines the type of the result. [Value]@(ref) results in the log density, while ValueGradient also calculates the gradient, both returning eponymous types.\n\n\n\n\n\n"
+    "text": "logdensity(resulttype, ℓ, x)\n\nEvaluate the AbstractLogDensityProblem ℓ at x, which has length compatible with its dimension.\n\nThe argument resulttype determines the type of the result:\n\nReal for an unchecked evaluation of the log density which should return a\n\n::Real number (that could be NaN, Inf, etc),\n\nValue for a checked log density, returning a Value,\nValueGradient also calculates the gradient, returning a ValueGradient,\nValueGradientBuffer calculates a ValueGradient potentially (but always\n\nconsistently for argument types) using the provided buffer for the gradient. In this case, the element type of the array may determine the result element type.\n\nImplementation note\n\nMost types should just define the methods for Real and ValueGradientBuffer (when applicable), as Value and ValueGradient fall back to these, respectively.\n\n\n\n\n\n"
 },
 
 {
