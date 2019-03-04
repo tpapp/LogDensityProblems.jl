@@ -147,8 +147,6 @@ end
     @test repr(ADgradient(:ForwardDiff, p; chunk = 2)) ==
         ("ForwardDiff AD wrapper for " * repr(p) * ", w/ chunk size 2")
     @test repr(ADgradient(:ReverseDiff, p)) == ("ReverseDiff AD wrapper for " * repr(p))
-    @test repr(ADgradient(:ReverseDiff, p; tape = true)) ==
-        ("ReverseDiff AD wrapper (compiled tape) for " * repr(p))
     @test repr(ADgradient(:Flux, p)) == ("Flux AD wrapper for " * repr(p))
 end
 
