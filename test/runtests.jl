@@ -15,12 +15,23 @@ Random.seed!(1)
 """
     a ≅ b
 
-Compare fields and types (strictly), for unit testing.
+Compare fields and types (strictly), for unit testing. For less strict comparison, use `≈`.
 """
 ≅(::Any, ::Any) = false
 ≅(a::Value{T}, b::Value{T}) where {T} = a.value == b.value
 ≅(a::ValueGradient{T,V}, b::ValueGradient{T,V}) where {T,V} =
     a.value == b.value && (a.value == -Inf || a.gradient == b.gradient)
+
+_wide_tol(a, b) = max(√eps(a.value), √eps(b.value))
+
+function Base.isapprox(a::Value, b::Value; atol = _wide_tol(a, b), rtol = atol)
+    isapprox(a.value, b.value; atol = atol, rtol = rtol)
+end
+
+function Base.isapprox(a::ValueGradient, b::ValueGradient; atol = _wide_tol(a, b), rtol = atol)
+    isapprox(a.value, b.value; atol = atol, rtol = rtol) &&
+        (a.value == -Inf || isapprox(a.gradient, b.gradient; atol = √eps(), rtol = atol))
+end
 
 ####
 #### result types
@@ -224,6 +235,8 @@ LogDensityProblems.logdensity(::Type{Real}, ::TestLogDensity, x) = test_logdensi
     @test dimension(∇ℓ) == 3
     buffer = randn(3)
     vb = ValueGradientBuffer(buffer)
+    buffer32 = randn(Float32, 3) # test non-matching buffer type
+    vb32 = ValueGradientBuffer(buffer32)
     for _ in 1:100
         x = randn(3)
         @test logdensity(Real, ∇ℓ, x) ≈ test_logdensity(x)
@@ -233,6 +246,10 @@ LogDensityProblems.logdensity(::Type{Real}, ::TestLogDensity, x) = test_logdensi
         vg2 = logdensity(vb, ∇ℓ, x)
         @test vg2.gradient ≡ buffer
         @test vg2 ≅ vg
+        vg3 = logdensity(vb32, ∇ℓ, x)
+        @test vg3.gradient ≡ buffer32
+        @test vg3 ≈ vg
+        @test vg3 isa ValueGradient{Float32, Vector{Float32}}
     end
 end
 
@@ -257,6 +274,8 @@ end
     @test dimension(∇ℓ) == 3
     buffer = randn(3)
     vb = ValueGradientBuffer(buffer)
+    buffer32 = randn(Float32, 3) # test non-matching buffer type
+    vb32 = ValueGradientBuffer(buffer32)
     for _ in 1:100
         x = randn(3)
         @test logdensity(Real, ∇ℓ, x) ≈ test_logdensity(x)
@@ -266,6 +285,10 @@ end
         vg2 = logdensity(vb, ∇ℓ, x)
         @test vg2.gradient ≡ buffer
         @test vg2 ≅ vg
+        vg3 = logdensity(vb32, ∇ℓ, x)
+        @test vg3.gradient ≡ buffer32
+        @test vg3 ≈ vg
+        @test vg3 isa ValueGradient{Float32, Vector{Float32}}
     end
 end
 
