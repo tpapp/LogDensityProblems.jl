@@ -1,4 +1,4 @@
-## Introduction
+# Introduction
 
 This package provides the following functionality:
 
@@ -40,14 +40,4 @@ LogDensityProblems.stresstest
 LogDensityProblems.benchmark_ForwardDiff_chunks
 LogDensityProblems.@iffinite
 LogDensityRejectErrors
-```
-
-## Internals
-
-```@docs
-LogDensityProblems.AbstractLogDensityProblem
-LogDensityProblems.LogDensityWrapper
-LogDensityProblems.ADGradientWrapper
-LogDensityProblems.heuristic_chunks
-LogDensityProblems.RejectLogDensity
 ```

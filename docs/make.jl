@@ -5,8 +5,10 @@ makedocs(
     modules = [LogDensityProblems],
     format = Documenter.HTML(),
     clean = true,
+    authors = "Tamás K. Papp",
     checkdocs = :export,
-    pages = Any["Overview" => "index.md"]
+    pages = Any["Home" => "index.md",
+                "Internals" => "internals.md"]
 )
 
 deploydocs(
