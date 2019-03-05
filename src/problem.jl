@@ -24,8 +24,8 @@ with its [`dimension`](@ref).
 
 The argument `resulttype` determines the type of the result:
 
-1. [`Real`](@ref) for an unchecked evaluation of the log density which should return a
-`::Real` number (that could be `NaN`, `Inf`, etc),
+1. `Real` for an unchecked evaluation of the log density which should return a `::Real`
+number (that could be `NaN`, `Inf`, etc),
 
 1. [`Value`](@ref) for a checked log density, returning a `Value`,
 

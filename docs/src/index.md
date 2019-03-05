@@ -1,21 +1,14 @@
 ## Introduction
 
-!!! note
+This package provides the following functionality:
 
-    Currently this is just a placeholder that renders the docstrings.
+1. It defines the [`logdensity`](@ref) method with corresponding interface, which can be used by other packages that operate on (log) densities and need to evaluate the log densities or the gradients (eg [MCMC](https://en.wikipedia.org/wiki/Markov_chain_Monte_Carlo), [MAP](https://en.wikipedia.org/wiki/Maximum_a_posteriori_estimation), [ML](https://en.wikipedia.org/wiki/Maximum_likelihood_estimation) or similar methods).
 
-## Problem definition
+2. It defines the [`ADgradient`](@ref) which makes objects that support `logdensity` to calculate log density *values* calculate log density *gradients* using various automatic differentiation packages.
 
-```@docs
-TransformedLogDensity
-reject_logdensity
-```
+3. It defines the wrapper [`TransformedLogDensity`](@ref) using the [TransformVariables.jl](https://github.com/tpapp/TransformVariables.jl) package, allowing callables that take a set of parameters transformed from a flat vector of real numbers to support the `logdensity` interface.
 
-## Gradient via automatic differentiation
-
-```@docs
-ADgradient
-```
+4. Various utility functions for debugging and testing log densities.
 
 ## Inference
 
@@ -24,6 +17,20 @@ logdensity
 dimension
 LogDensityProblems.Value
 LogDensityProblems.ValueGradient
+LogDensityProblems.ValueGradientBuffer
+```
+
+## Gradient via automatic differentiation
+
+```@docs
+ADgradient
+```
+
+## Transformed problem definition
+
+```@docs
+TransformedLogDensity
+reject_logdensity
 ```
 
 ## Benchmarking, diagnostics, and utilities
