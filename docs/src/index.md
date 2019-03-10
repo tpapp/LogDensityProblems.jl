@@ -30,7 +30,6 @@ ADgradient
 
 ```@docs
 TransformedLogDensity
-reject_logdensity
 ```
 
 ## Benchmarking, diagnostics, and utilities

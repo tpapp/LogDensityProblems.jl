@@ -20,6 +20,9 @@ Wrap a logdensity `ℓ` so that errors `<: E` are caught and replaced with a ``-
 Use cautiously, as catching errors can mask errors in your code. The recommended use case is
 for catching quirks and corner cases of AD. See also [`stresstest`](@ref) as an alternative
 to using this wrapper.
+
+Also, some AD packages don't handle `try` - `catch` blocks, so it is advised to use this as
+the outermost wrapper.
 """
 LogDensityRejectErrors{E}(ℓ::L) where {E,L} = LogDensityRejectErrors{E,L}(ℓ)
 

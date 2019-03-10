@@ -159,18 +159,6 @@ end
     @test flag == [1]
 end
 
-@testset "rejection" begin
-    f(x) = (z = first(x); z < 0 && reject_logdensity(); -abs2(z))
-    P = TransformedLogDensity(as(Array, 1), f)
-    @test logdensity(Value, P, [1.0]) ≅ Value(-1.0)
-    @test logdensity(Value, P, [-1.0]) ≅ Value(-Inf)
-    ∇P = ADgradient(:ForwardDiff, P)
-    @test logdensity(Value, ∇P, [1.0]) ≅ Value(-1.0)
-    @test logdensity(Value, ∇P, [-1.0]) ≅ Value(-Inf)
-    @test logdensity(ValueGradient, ∇P, [1.0]) ≅ ValueGradient(-1.0, [-2.0])
-    @test logdensity(ValueGradient, ∇P, [-1.0]) ≅ ValueGradient(-Inf, randn(1))
-end
-
 @testset "reject wrapper" begin
 
     # function that throws various errors
