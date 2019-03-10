@@ -1,7 +1,7 @@
 using LogDensityProblems, Test, Distributions, TransformVariables
 using LogDensityProblems: Value, ValueGradient, ValueGradientBuffer
 
-import ForwardDiff, Flux, ReverseDiff
+import ForwardDiff, Flux, ReverseDiff, Zygote
 using Parameters: @unpack
 using TransformVariables
 import Random
@@ -306,6 +306,22 @@ end
         @test vg3.gradient ≡ buffer32
         @test vg3 ≈ vg
         @test vg3 isa ValueGradient{Float32, Vector{Float32}}
+    end
+end
+
+@testset "AD via Zygote" begin
+    ∇ℓ = ADgradient(:Zygote, TestLogDensity())
+    @test dimension(∇ℓ) == 3
+    buffer = randn(3)
+    vb = ValueGradientBuffer(buffer)
+    for _ in 1:100
+        x = randn(3)
+        @test logdensity(Real, ∇ℓ, x) ≈ test_logdensity(x)
+        @test logdensity(Value, ∇ℓ, x) ≅ Value(test_logdensity(x))
+        vg = ValueGradient(test_logdensity(x), test_gradient(x))
+        @test logdensity(ValueGradient, ∇ℓ, x) ≅ vg
+        # NOTE don't test buffer ≡, as that is not implemented for Zygote
+        @test logdensity(vb, ∇ℓ, x) ≅ vg
     end
 end
 
