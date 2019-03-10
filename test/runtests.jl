@@ -1,7 +1,7 @@
 using LogDensityProblems, Test, Distributions, TransformVariables
 using LogDensityProblems: Value, ValueGradient, ValueGradientBuffer
 
-import ForwardDiff, Flux, ReverseDiff, Zygote
+import ForwardDiff, Flux, ReverseDiff
 using Parameters: @unpack
 using TransformVariables
 import Random
@@ -309,19 +309,25 @@ end
     end
 end
 
-@testset "AD via Zygote" begin
-    ∇ℓ = ADgradient(:Zygote, TestLogDensity())
-    @test dimension(∇ℓ) == 3
-    buffer = randn(3)
-    vb = ValueGradientBuffer(buffer)
-    for _ in 1:100
-        x = randn(3)
-        @test logdensity(Real, ∇ℓ, x) ≈ test_logdensity(x)
-        @test logdensity(Value, ∇ℓ, x) ≅ Value(test_logdensity(x))
-        vg = ValueGradient(test_logdensity(x), test_gradient(x))
-        @test_skip logdensity(ValueGradient, ∇ℓ, x) ≅ vg
-        # NOTE don't test buffer ≡, as that is not implemented for Zygote
-        @test_skip logdensity(vb, ∇ℓ, x) ≅ vg
+if VERSION ≥ v"1.1.0"
+    # cf https://github.com/FluxML/Zygote.jl/issues/104
+
+    import Zygote
+
+    @testset "AD via Zygote" begin
+        ∇ℓ = ADgradient(:Zygote, TestLogDensity())
+        @test dimension(∇ℓ) == 3
+        buffer = randn(3)
+        vb = ValueGradientBuffer(buffer)
+        for _ in 1:100
+            x = randn(3)
+            @test logdensity(Real, ∇ℓ, x) ≈ test_logdensity(x)
+            @test logdensity(Value, ∇ℓ, x) ≅ Value(test_logdensity(x))
+            vg = ValueGradient(test_logdensity(x), test_gradient(x))
+            @test_skip logdensity(ValueGradient, ∇ℓ, x) ≅ vg
+            # NOTE don't test buffer ≡, as that is not implemented for Zygote
+            @test_skip logdensity(vb, ∇ℓ, x) ≅ vg
+        end
     end
 end
 
