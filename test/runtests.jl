@@ -315,7 +315,9 @@ if VERSION ≥ v"1.1.0"
     import Zygote
 
     @testset "AD via Zygote" begin
-        ∇ℓ = ADgradient(:Zygote, TestLogDensity())
+        ℓ = TestLogDensity()
+        ∇ℓ = ADgradient(:Zygote, ℓ)
+        @test repr(∇ℓ) == ("Zygote AD wrapper for " * repr(ℓ))
         @test dimension(∇ℓ) == 3
         buffer = randn(3)
         vb = ValueGradientBuffer(buffer)
