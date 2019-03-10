@@ -89,19 +89,11 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "#LogDensityProblems.reject_logdensity",
-    "page": "Home",
-    "title": "LogDensityProblems.reject_logdensity",
-    "category": "function",
-    "text": "reject_logdensity()\n\n\nMake wrappers return a -Inf log density (of the appropriate type).\n\nnote: Note\nThis is done by throwing an exception that is caught by the wrappers, unwinding the stack. Using this function or returning -Inf is an implementation choice, do whatever is most convenient.\n\n\n\n\n\n"
-},
-
-{
     "location": "#Transformed-problem-definition-1",
     "page": "Home",
     "title": "Transformed problem definition",
     "category": "section",
-    "text": "TransformedLogDensity\nreject_logdensity"
+    "text": "TransformedLogDensity"
 },
 
 {
@@ -133,7 +125,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Home",
     "title": "LogDensityProblems.LogDensityRejectErrors",
     "category": "type",
-    "text": "LogDensityRejectErrors(ℓ)\n\n\nWrap a logdensity ℓ so that errors <: E are caught and replaced with a - value.\n\nE defaults to InvalidLogDensityExceptions.\n\nNote\n\nUse cautiously, as catching errors can mask errors in your code. The recommended use case is for catching quirks and corner cases of AD. See also stresstest as an alternative to using this wrapper.\n\n\n\n\n\n"
+    "text": "LogDensityRejectErrors(ℓ)\n\n\nWrap a logdensity ℓ so that errors <: E are caught and replaced with a - value.\n\nE defaults to InvalidLogDensityExceptions.\n\nNote\n\nUse cautiously, as catching errors can mask errors in your code. The recommended use case is for catching quirks and corner cases of AD. See also stresstest as an alternative to using this wrapper.\n\nAlso, some AD packages don\'t handle try - catch blocks, so it is advised to use this as the outermost wrapper.\n\n\n\n\n\n"
 },
 
 {
@@ -150,46 +142,6 @@ var documenterSearchIndex = {"docs": [
     "title": "Internals",
     "category": "page",
     "text": ""
-},
-
-{
-    "location": "internals/#LogDensityProblems.AbstractLogDensityProblem",
-    "page": "Internals",
-    "title": "LogDensityProblems.AbstractLogDensityProblem",
-    "category": "type",
-    "text": "Abstract type for log density representations, which support the following interface for ℓ::AbstractLogDensityProblem:\n\ndimension returns the dimension of the domain of ℓ,\nlogdensity evaluates the log density ℓ at a given point.\n\nSee also LogDensityProblems.stresstest for stress testing.\n\n\n\n\n\n"
-},
-
-{
-    "location": "internals/#LogDensityProblems.LogDensityWrapper",
-    "page": "Internals",
-    "title": "LogDensityProblems.LogDensityWrapper",
-    "category": "type",
-    "text": "An abstract type that wraps another log density in its field ℓ.\n\nNotes\n\nImplementation detail, not exported.\n\n\n\n\n\n"
-},
-
-{
-    "location": "internals/#LogDensityProblems.ADGradientWrapper",
-    "page": "Internals",
-    "title": "LogDensityProblems.ADGradientWrapper",
-    "category": "type",
-    "text": "An abstract type that wraps another log density for calculating the gradient via AD.\n\nAutomatically defines a logdensity(Value, ...) method, subtypes should define a logdensity(ValueGradient, ...) one.\n\n\n\n\n\n"
-},
-
-{
-    "location": "internals/#LogDensityProblems.heuristic_chunks",
-    "page": "Internals",
-    "title": "LogDensityProblems.heuristic_chunks",
-    "category": "function",
-    "text": "heuristic_chunks(N)\nheuristic_chunks(N, M)\n\n\nDefault chunk sizes to try for benchmarking. Fewer than M, always contains 1 and N.\n\n\n\n\n\n"
-},
-
-{
-    "location": "internals/#LogDensityProblems.RejectLogDensity",
-    "page": "Internals",
-    "title": "LogDensityProblems.RejectLogDensity",
-    "category": "type",
-    "text": "struct RejectLogDensity <: Exception\n\nException for unwinding the stack early for infeasible values. Use reject_logdensity().\n\n\n\n\n\n"
 },
 
 {
