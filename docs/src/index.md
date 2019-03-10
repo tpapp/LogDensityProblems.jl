@@ -8,7 +8,6 @@
 
 ```@docs
 TransformedLogDensity
-reject_logdensity
 ```
 
 ## Gradient via automatic differentiation
@@ -24,6 +23,7 @@ logdensity
 dimension
 LogDensityProblems.Value
 LogDensityProblems.ValueGradient
+LogDensityProblems.ValueGradientBuffer
 ```
 
 ## Benchmarking, diagnostics, and utilities
@@ -42,5 +42,4 @@ LogDensityProblems.AbstractLogDensityProblem
 LogDensityProblems.LogDensityWrapper
 LogDensityProblems.ADGradientWrapper
 LogDensityProblems.heuristic_chunks
-LogDensityProblems.RejectLogDensity
 ```

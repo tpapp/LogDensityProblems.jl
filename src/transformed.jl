@@ -39,11 +39,5 @@ TransformVariables.dimension(p::TransformedLogDensity) = dimension(p.transformat
 
 function logdensity(::Type{Real}, p::TransformedLogDensity, x::AbstractVector)
     @unpack transformation, log_density_function = p
-    try
-        transform_logdensity(transformation, log_density_function, x)
-    catch e
-        e isa RejectLogDensity || rethrow(e)
-        # type stable if log_density_function preserves eltype of x
-        convert(eltype(x), -Inf)
-    end
+    transform_logdensity(transformation, log_density_function, x)
 end

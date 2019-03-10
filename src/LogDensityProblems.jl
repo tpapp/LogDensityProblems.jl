@@ -12,7 +12,6 @@ using TransformVariables: AbstractTransform, transform_logdensity, TransformVari
     dimension, random_reals, random_arg
 
 include("result_types.jl")
-include("rejection.jl")
 include("problem.jl")
 include("transformed.jl")
 include("reject_errors.jl")
