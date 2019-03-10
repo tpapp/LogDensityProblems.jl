@@ -324,9 +324,9 @@ if VERSION ≥ v"1.1.0"
             @test logdensity(Real, ∇ℓ, x) ≈ test_logdensity(x)
             @test logdensity(Value, ∇ℓ, x) ≅ Value(test_logdensity(x))
             vg = ValueGradient(test_logdensity(x), test_gradient(x))
-            @test_skip logdensity(ValueGradient, ∇ℓ, x) ≅ vg
+            @test logdensity(ValueGradient, ∇ℓ, x) ≅ vg
             # NOTE don't test buffer ≡, as that is not implemented for Zygote
-            @test_skip logdensity(vb, ∇ℓ, x) ≅ vg
+            @test logdensity(vb, ∇ℓ, x) ≅ vg
         end
     end
 end
