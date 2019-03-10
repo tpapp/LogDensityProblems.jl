@@ -19,7 +19,7 @@ Base.show(io::IO, ∇ℓ::ZygoteGradientLogDensity) = print(io, "Zygote AD wrapp
 function logdensity(::Type{ValueGradient}, ∇ℓ::ZygoteGradientLogDensity, x::AbstractVector)
     @unpack ℓ = ∇ℓ
     y, back = Zygote.forward(_logdensity_closure(ℓ), x)
-    gradient = isfinite(y) ? back(Int8(1)) : zeros(typeof(y), length(y))
+    gradient = isfinite(y) ? back(Int8(1))[1] : zeros(typeof(y), length(y))
     ValueGradient(y, gradient)
 end
 

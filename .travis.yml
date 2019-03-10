@@ -21,8 +21,8 @@ matrix:
 #  apt: # apt-get for linux
 #    packages:
 #    - gfortran
-before_script:
-  - julia -e 'using Pkg; pkg"add Zygote#master IRTools#master"'
+# before_script:
+#   - julia -e 'using Pkg; pkg"add Zygote#master IRTools#master"'
 jobs:
   include:
     - stage: "Documentation"

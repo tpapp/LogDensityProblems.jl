@@ -311,11 +311,15 @@ end
 
 if VERSION ≥ v"1.1.0"
     # cf https://github.com/FluxML/Zygote.jl/issues/104
-
+    import Pkg # use latest versions until tagged
+    Pkg.add(Pkg.PackageSpec(name = "IRTools", rev = "master"))
+    Pkg.add(Pkg.PackageSpec(name = "Zygote", rev = "master"))
     import Zygote
 
     @testset "AD via Zygote" begin
-        ∇ℓ = ADgradient(:Zygote, TestLogDensity())
+        ℓ = TestLogDensity()
+        ∇ℓ = ADgradient(:Zygote, ℓ)
+        @test repr(∇ℓ) == ("Zygote AD wrapper for " * repr(ℓ))
         @test dimension(∇ℓ) == 3
         buffer = randn(3)
         vb = ValueGradientBuffer(buffer)
@@ -324,9 +328,9 @@ if VERSION ≥ v"1.1.0"
             @test logdensity(Real, ∇ℓ, x) ≈ test_logdensity(x)
             @test logdensity(Value, ∇ℓ, x) ≅ Value(test_logdensity(x))
             vg = ValueGradient(test_logdensity(x), test_gradient(x))
-            @test_skip logdensity(ValueGradient, ∇ℓ, x) ≅ vg
+            @test logdensity(ValueGradient, ∇ℓ, x) ≅ vg
             # NOTE don't test buffer ≡, as that is not implemented for Zygote
-            @test_skip logdensity(vb, ∇ℓ, x) ≅ vg
+            @test logdensity(vb, ∇ℓ, x) ≅ vg
         end
     end
 end
