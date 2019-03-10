@@ -311,7 +311,9 @@ end
 
 if VERSION ≥ v"1.1.0"
     # cf https://github.com/FluxML/Zygote.jl/issues/104
-
+    import Pkg # use latest versions until tagged
+    Pkg.add("Zygote#master")
+    Pkg.add("IRTools#master")
     import Zygote
 
     @testset "AD via Zygote" begin
