@@ -1,3 +1,9 @@
+# Unreleased
+
+# 0.8.1
+
+- minor package and version fixes
+
 # 0.8.0
 
 - add `ValueGradientBuffer` for pre-allocated gradient storage ([#34](https://github.com/tpapp/LogDensityProblems.jl/pull/34))
