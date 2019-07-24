@@ -15,6 +15,7 @@ TransformVariables = "84d833dd-6860-57f9-a1a7-6da5db126cff"
 
 [compat]
 TransformVariables = "^0.2, ^0.3"
+Zygote = "^0.3.2"
 
 [extras]
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
@@ -28,5 +29,4 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
 [targets]
-test = ["Distributions", "Documenter", "Flux", "ForwardDiff", "ReverseDiff", "Test", "StatsBase",
-        "StatsFuns", "Zygote"]
+test = ["Distributions", "Documenter", "Flux", "ForwardDiff", "ReverseDiff", "Test", "StatsBase", "StatsFuns", "Zygote"]
