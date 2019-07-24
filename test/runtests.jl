@@ -241,11 +241,15 @@ end
 #### various AD tests
 ####
 
-struct TestLogDensity end
+struct TestLogDensity{F}
+    ℓ::F
+end
 TransformVariables.dimension(::TestLogDensity) = 3
-test_logdensity(x) = any(x .< 0) ? -Inf : -2*abs2(x[1]) - 3*abs2(x[2]) - 5*abs2(x[3])
+test_logdensity1(x) = -2*abs2(x[1]) - 3*abs2(x[2]) - 5*abs2(x[3])
+test_logdensity(x) = any(x .< 0) ? -Inf : test_logdensity1(x)
 test_gradient(x) = x .* [-4, -6, -10]
-LogDensityProblems.logdensity(::Type{Real}, ::TestLogDensity, x) = test_logdensity(x)
+TestLogDensity() = TestLogDensity(test_logdensity) # default: -Inf for negative input
+LogDensityProblems.logdensity(::Type{Real}, ℓ::TestLogDensity, x) = ℓ.ℓ(x)
 
 @testset "AD via ForwardDiff" begin
     ∇ℓ = ADgradient(:ForwardDiff, TestLogDensity())
@@ -311,13 +315,11 @@ end
 
 if VERSION ≥ v"1.1.0"
     # cf https://github.com/FluxML/Zygote.jl/issues/104
-    import Pkg # use latest versions until tagged
-    Pkg.add(Pkg.PackageSpec(name = "IRTools", rev = "master"))
-    Pkg.add(Pkg.PackageSpec(name = "Zygote", rev = "master"))
     import Zygote
 
     @testset "AD via Zygote" begin
-        ℓ = TestLogDensity()
+        # cf https://github.com/FluxML/Zygote.jl/issues/271
+        ℓ = TestLogDensity(test_logdensity1)
         ∇ℓ = ADgradient(:Zygote, ℓ)
         @test repr(∇ℓ) == ("Zygote AD wrapper for " * repr(ℓ))
         @test dimension(∇ℓ) == 3
@@ -325,9 +327,9 @@ if VERSION ≥ v"1.1.0"
         vb = ValueGradientBuffer(buffer)
         for _ in 1:100
             x = randn(3)
-            @test logdensity(Real, ∇ℓ, x) ≈ test_logdensity(x)
-            @test logdensity(Value, ∇ℓ, x) ≅ Value(test_logdensity(x))
-            vg = ValueGradient(test_logdensity(x), test_gradient(x))
+            @test logdensity(Real, ∇ℓ, x) ≈ test_logdensity1(x)
+            @test logdensity(Value, ∇ℓ, x) ≅ Value(test_logdensity1(x))
+            vg = ValueGradient(test_logdensity1(x), test_gradient(x))
             @test logdensity(ValueGradient, ∇ℓ, x) ≅ vg
             # NOTE don't test buffer ≡, as that is not implemented for Zygote
             @test logdensity(vb, ∇ℓ, x) ≅ vg
