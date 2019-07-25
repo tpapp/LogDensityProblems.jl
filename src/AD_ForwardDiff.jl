@@ -1,7 +1,9 @@
-import .ForwardDiff
+#####
+##### Gradient AD implementation using ForwardDiff
+#####
 
-
-# AD using ForwardDiff
+import .ForwardDiff
+using BenchmarkTools: @belapsed
 
 struct ForwardDiffLogDensity{L, C} <: ADGradientWrapper
     ℓ::L
@@ -15,11 +17,16 @@ end
 
 _default_chunk(ℓ) = ForwardDiff.Chunk(dimension(ℓ))
 
-_default_gradientconfig(ℓ, chunk::ForwardDiff.Chunk) =
-    ForwardDiff.GradientConfig(_logdensity_closure(ℓ), zeros(dimension(ℓ)), chunk)
+# defined to make the tag match
+_logdensity_closure(ℓ) = x -> logdensity(ℓ, x)
 
-_default_gradientconfig(ℓ, chunk::Integer) =
+function _default_gradientconfig(ℓ, chunk::ForwardDiff.Chunk)
+    ForwardDiff.GradientConfig(_logdensity_closure(ℓ), zeros(dimension(ℓ)), chunk)
+end
+
+function _default_gradientconfig(ℓ, chunk::Integer)
     _default_gradientconfig(ℓ, ForwardDiff.Chunk(chunk))
+end
 
 """
 $(SIGNATURES)
@@ -37,11 +44,11 @@ function ADgradient(::Val{:ForwardDiff}, ℓ;
     ForwardDiffLogDensity(ℓ, gradientconfig)
 end
 
-function logdensity(vgb::ValueGradientBuffer, fℓ::ForwardDiffLogDensity, x::AbstractVector)
+function logdensity_and_gradient(fℓ::ForwardDiffLogDensity, x::AbstractVector)
     @unpack ℓ, gradientconfig = fℓ
-    result = ForwardDiff.gradient!(DiffResults.MutableDiffResult(vgb),
-                                   _logdensity_closure(ℓ), x, gradientconfig)
-    ValueGradient(result)
+    buffer = _diffresults_buffer(ℓ, x)
+    result = ForwardDiff.gradient!(buffer, _logdensity_closure(ℓ), x, gradientconfig)
+    _diffresults_extract(result)
 end
 
 """
@@ -66,21 +73,21 @@ Benchmark a log density problem with various chunk sizes using ForwardDiff.
 `chunks`, which defaults to all possible chunk sizes, determines the chunks that are tried.
 
 The function returns `chunk => time` pairs, where `time` is the benchmarked runtime in
-seconds, as determined by `BenchmarkTools.@belapsed`.
+seconds, as determined by `BenchmarkTools.@belapsed`. The gradient is evaluated at `x`
+(defaults to zeros).
 
 *Runtime may be long* because of tuned benchmarks, so when `markprogress == true` (the
- default), dots are printed to mark progress.
+default), dots are printed to mark progress.
 
-This function is not exported, but part of the API.
+This function is not exported, but part of the API when `ForwardDiff` is imported.
 """
 function benchmark_ForwardDiff_chunks(ℓ;
                                       chunks = heuristic_chunks(dimension(ℓ), 20),
-                                      resulttype = ValueGradient,
-                                      markprogress = true)
+                                      markprogress = true,
+                                      x = zeros(dimension(ℓ)))
     map(chunks) do chunk
         ∇ℓ = ADgradient(Val(:ForwardDiff), ℓ; chunk = ForwardDiff.Chunk(chunk))
-        x = zeros(dimension(ℓ))
         markprogress && print(".")
-        chunk => @belapsed logdensity($(resulttype), $(∇ℓ), $(x))
+        chunk => @belapsed logdensity_and_gradient($(∇ℓ), $(x))
     end
 end

@@ -1,3 +1,7 @@
+#####
+##### Gradient AD implementation using Flux
+#####
+
 import .Flux
 
 struct FluxGradientLogDensity{L} <: ADGradientWrapper
@@ -13,14 +17,9 @@ ADgradient(::Val{:Flux}, ℓ) = FluxGradientLogDensity(ℓ)
 
 Base.show(io::IO, ∇ℓ::FluxGradientLogDensity) = print(io, "Flux AD wrapper for ", ∇ℓ.ℓ)
 
-function logdensity(::Type{ValueGradient}, ∇ℓ::FluxGradientLogDensity, x::AbstractVector)
+function logdensity_and_gradient(∇ℓ::FluxGradientLogDensity, x::AbstractVector)
     @unpack ℓ = ∇ℓ
-    y, back = Flux.Tracker.forward(_logdensity_closure(ℓ), x)
+    y, back = Flux.Tracker.forward(x -> logdensity(ℓ, x), x)
     yval = Flux.Tracker.data(y)
-    ValueGradient(yval, isfinite(yval) ? first(Flux.Tracker.data.(back(1))) : similar(x))
-end
-
-function logdensity(::ValueGradientBuffer, ∇ℓ::FluxGradientLogDensity, x::AbstractVector)
-    # NOTE this implementation ignores the buffer
-    logdensity(ValueGradient, ∇ℓ, x)
+    yval, first(Flux.Tracker.data.(back(1)))
 end
