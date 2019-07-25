@@ -1,3 +1,15 @@
+"""
+A unified interface for log density problems, for
+
+1. defining mappings to a log density (eg Bayesian for inference),
+
+2. optionally obtaining a gradient using automatic differentiation,
+
+3. defining a common interface for working with such log densities and gradients (eg MCMC).
+
+These use cases utilize different parts of this package, make sure you read the
+documentation.
+"""
 module LogDensityProblems
 
 export TransformedLogDensity, ADgradient
@@ -37,9 +49,9 @@ $(SIGNATURES)
 
 Test if the type (or a value, for convenience) supports the log density interface.
 
-When `nothing` is returned, it doesn't. When `LogDensityOrder{K}()` is returned (typically
-with `K == 0` or `K = 1`), derivatives up to order `K` are supported. *All other return
-values are invalid*.
+When `nothing` is returned, it doesn't support this interface.  When `LogDensityOrder{K}()`
+is returned (typically with `K == 0` or `K = 1`), derivatives up to order `K` are supported.
+*All other return values are invalid*.
 
 # Interface description
 
@@ -53,17 +65,17 @@ The following methods need to be implemented for the interface:
 
 See also [`LogDensityProblems.stresstest`](@ref) for stress testing.
 """
-capabilities(::Type) = nothing
+capabilities(T::Type) = nothing
 
 capabilities(x) = capabilities(typeof(x)) # convenience function
 
 """
     dimension(ℓ)
 
-Dimension of the input vectors `x` for log density `ℓ. See [`logdensity`](@ref),
+Dimension of the input vectors `x` for log density `ℓ`. See [`logdensity`](@ref),
 [`logdensity_and_gradient`](@ref).
 
-!!! NOTE
+!!! note
     This function is *distinct* from `TransformedVariables.dimension`.
 """
 function dimension end
@@ -74,7 +86,8 @@ function dimension end
 Evaluate the log density `ℓ` at `x`, which has length compatible with its
 [`dimension`](@ref).
 
-Return a real number, which may or may not be finite (can also be `NaN`).
+Return a real number, which may or may not be finite (can also be `NaN`). Non-finite values
+other than `-Inf` are invalid but do not error, caller should deal with these appropriately.
 """
 function logdensity end
 

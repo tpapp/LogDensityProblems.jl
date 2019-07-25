@@ -173,6 +173,7 @@ end
     @test repr(p) == "TransformedLogDensity of dimension 1"
     @test dimension(p) == 1
     @test p.transformation ≡ t
+    @test capabilities(p) == LogDensityOrder(0)
 
     # gradient of a problem
     ∇p = ADgradient(:ForwardDiff, p)

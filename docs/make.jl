@@ -7,8 +7,7 @@ makedocs(
     clean = true,
     authors = "Tamás K. Papp",
     checkdocs = :export,
-    pages = Any["Home" => "index.md",
-                "Internals" => "internals.md"]
+    pages = Any["Documentation" => "index.md"]
 )
 
 deploydocs(
