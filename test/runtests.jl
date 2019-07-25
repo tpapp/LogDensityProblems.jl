@@ -69,6 +69,18 @@ TestLogDensity() = TestLogDensity(test_logdensity) # default: -Inf for negative 
 Base.show(io::IO, ::TestLogDensity) = print(io, "TestLogDensity")
 
 ####
+#### traits
+####
+
+@test capabilities("a fish") ≡ nothing
+
+@testset "LogDensityOrder" begin
+    @test LogDensityOrder(1) == LogDensityOrder(1)
+    @test_throws ArgumentError LogDensityOrder(-1)
+    @test LogDensityOrder(2) ≥ LogDensityOrder(1)
+end
+
+####
 #### AD backends
 ####
 
@@ -158,6 +170,7 @@ end
 
     # a Bayesian problem
     p = TransformedLogDensity(t, logposterior)
+    @test repr(p) == "TransformedLogDensity of dimension 1"
     @test dimension(p) == 1
     @test p.transformation ≡ t
 
