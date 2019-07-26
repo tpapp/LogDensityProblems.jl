@@ -10,20 +10,14 @@ $(SIGNATURES)
 Gradient using algorithmic/automatic differentiation via Zygote.
 
 !!! NOTE
-    Experimental, use latest `Zygote#master` and `IRTools#master`.
+    Experimental, bug reports welcome.
 """
 ADgradient(::Val{:Zygote}, ℓ) = ZygoteGradientLogDensity(ℓ)
 
 Base.show(io::IO, ∇ℓ::ZygoteGradientLogDensity) = print(io, "Zygote AD wrapper for ", ∇ℓ.ℓ)
 
-function logdensity(::Type{ValueGradient}, ∇ℓ::ZygoteGradientLogDensity, x::AbstractVector)
+function logdensity_and_gradient(∇ℓ::ZygoteGradientLogDensity, x::AbstractVector)
     @unpack ℓ = ∇ℓ
     y, back = Zygote.forward(_logdensity_closure(ℓ), x)
-    gradient = isfinite(y) ? first(back(Zygote.sensitivity(y))) : zeros(typeof(y), dimension(ℓ))
-    ValueGradient(y, gradient)
-end
-
-function logdensity(::ValueGradientBuffer, ∇ℓ::ZygoteGradientLogDensity, x::AbstractVector)
-    # NOTE this implementation ignores the buffer
-    logdensity(ValueGradient, ∇ℓ, x)
+    y, first(back(Zygote.sensitivity(y)))
 end
