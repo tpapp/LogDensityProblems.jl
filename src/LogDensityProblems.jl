@@ -88,6 +88,21 @@ Evaluate the log density `ℓ` at `x`, which has length compatible with its
 
 Return a real number, which may or may not be finite (can also be `NaN`). Non-finite values
 other than `-Inf` are invalid but do not error, caller should deal with these appropriately.
+
+# Note about constants
+
+Log densities can be shifted by *the same constant*, as long as it is consistent between
+calls. For example,
+
+```julia
+logdensity(::StandardMultivariateNormal) = -0.5 * sum(abs2, x)
+```
+
+is a valid implementation for some callable `StandardMultivariateNormal` that would
+implement the standard multivariate normal distribution (dimension ``k``) with pdf
+```math
+(2\\pi)^{-k/2} e^{-x'x/2}
+```
 """
 function logdensity end
 
@@ -103,6 +118,9 @@ Return two values:
 
 - *if* the log density is finite, the gradient, a vector of real numbers, otherwise this
    value is arbitrary and should be ignored.
+
+The first argument (the log density) can be shifted by a constant, see the note for
+[`logdensity`](@ref).
 """
 function logdensity_and_gradient end
 

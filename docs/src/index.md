@@ -12,6 +12,8 @@ This package serves two purposes:
       of Julia.
 This is documented in the next section, with a worked example.
 
+For the purposes of this package, *log densities* are still valid when shifted by a constant that may be unknown, but is consistent within calls. This is necessary for Bayesian inference, where log posteriors are usually calculated up to a constant. See [`LogDensityProblems.logdensity`](@ref) for details.
+
 # Working with log density problems
 
 Consider an inference problem where IID draws are obtained from a normal distribution,

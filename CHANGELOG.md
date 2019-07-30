@@ -1,5 +1,7 @@
 # Unreleased
 
+- clarify constant shifts in log densities
+
 # 0.9.0
 
 **Major, breaking API changes.**
