@@ -92,8 +92,9 @@ end
     @test capabilities(∇ℓ) ≡ LogDensityOrder(1)
     for _ in 1:100
         x = randn(3)
-        @test logdensity(∇ℓ, x) ≅ test_logdensity(x)
-        @test logdensity_and_gradient(∇ℓ, x) ≅ (test_logdensity(x), test_gradient(x))
+        @test @inferred(logdensity(∇ℓ, x)) ≅ test_logdensity(x)
+        @test @inferred(logdensity_and_gradient(∇ℓ, x)) ≅
+            (test_logdensity(x), test_gradient(x))
     end
 end
 
@@ -116,8 +117,9 @@ end
     @test capabilities(∇ℓ) ≡ LogDensityOrder(1)
     for _ in 1:100
         x = randn(3)
-        @test logdensity(∇ℓ, x) ≅ test_logdensity(x)
-        @test logdensity_and_gradient(∇ℓ, x) ≅ (test_logdensity(x), test_gradient(x))
+        @test @inferred(logdensity(∇ℓ, x)) ≅ test_logdensity(x)
+        @test @inferred(logdensity_and_gradient(∇ℓ, x)) ≅
+            (test_logdensity(x), test_gradient(x))
     end
 end
 
@@ -129,9 +131,9 @@ end
     @test capabilities(∇ℓ) ≡ LogDensityOrder(1)
     for _ in 1:100
         x = randn(3)
-        @test logdensity(∇ℓ, x) ≅ test_logdensity(x)
-        @test logdensity_and_gradient(∇ℓ, x) ≅ (test_logdensity(x), test_gradient(x))
-    end
+        @test @inferred(logdensity(∇ℓ, x)) ≅ test_logdensity(x)
+        @test @inferred(logdensity_and_gradient(∇ℓ, x)) ≅ (test_logdensity(x), test_gradient(x))
+   end
 end
 
 if VERSION ≥ v"1.1.0"
@@ -147,8 +149,9 @@ if VERSION ≥ v"1.1.0"
         @test capabilities(∇ℓ) ≡ LogDensityOrder(1)
         for _ in 1:100
             x = randn(3)
-            @test logdensity(∇ℓ, x) ≅ test_logdensity1(x)
-            @test logdensity_and_gradient(∇ℓ, x) ≅ (test_logdensity1(x), test_gradient(x))
+            @test @inferred(logdensity(∇ℓ, x)) ≅ test_logdensity1(x)
+            @test @inferred(logdensity_and_gradient(∇ℓ, x)) ≅
+                (test_logdensity1(x), test_gradient(x))
         end
     end
 end
