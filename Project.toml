@@ -1,7 +1,7 @@
 name = "LogDensityProblems"
 uuid = "6fdf6af0-433a-55f7-b3ed-c6c6e0b8df7c"
 authors = ["Tamas K. Papp <tkpapp@gmail.com>"]
-version = "0.9.0"
+version = "0.9.1"
 
 [deps]
 ArgCheck = "dce04be8-c92d-5529-be00-80e4d2c0e197"

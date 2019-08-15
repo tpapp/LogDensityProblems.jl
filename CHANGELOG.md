@@ -1,5 +1,7 @@
 # Unreleased
 
+# 0.9.1
+
 - clarify constant shifts in log densities
 
 - test for inference issues, fix for Flux
