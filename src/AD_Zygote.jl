@@ -18,6 +18,6 @@ Base.show(io::IO, ∇ℓ::ZygoteGradientLogDensity) = print(io, "Zygote AD wrapp
 
 function logdensity_and_gradient(∇ℓ::ZygoteGradientLogDensity, x::AbstractVector)
     @unpack ℓ = ∇ℓ
-    y, back = Zygote.forward(_logdensity_closure(ℓ), x)
+    y, back = Zygote.pullback(_logdensity_closure(ℓ), x)
     y, first(back(Zygote.sensitivity(y)))
 end

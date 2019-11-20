@@ -15,7 +15,7 @@ TransformVariables = "84d833dd-6860-57f9-a1a7-6da5db126cff"
 
 [compat]
 TransformVariables = "^0.2, ^0.3"
-Zygote = "^0.3.2"
+Zygote = "^0.4.1"
 
 [extras]
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
