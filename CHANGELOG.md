@@ -1,5 +1,11 @@
 # Unreleased
 
+# 0.9.2
+
+- follow API change in Zygote ([#51](https://github.com/tpapp/LogDensityProblems.jl/pull/51), thanks @scheidan)
+
+- add compat bounds (for automatic registration)
+
 # 0.9.1
 
 - clarify constant shifts in log densities
