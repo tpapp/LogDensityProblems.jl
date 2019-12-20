@@ -136,7 +136,6 @@ Using either definition, you can now transform to another object which is capabl
 ```@docs
 ADgradient
 ```
-Note that support for Zygote is experimental. At the moment, I would recommend that you use `Flux`.
 
 Now observe that we can obtain gradients, too:
 ```@repl 1

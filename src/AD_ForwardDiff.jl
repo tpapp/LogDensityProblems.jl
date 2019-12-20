@@ -29,7 +29,8 @@ function _default_gradientconfig(ℓ, chunk::Integer)
 end
 
 """
-$(SIGNATURES)
+    ADgradient(:ForwardDiff, ℓ; chunk, gradientconfig)
+    ADgradient(Val(:ForwardDiff), ℓ; chunk, gradientconfig)
 
 Wrap a log density that supports evaluation of `Value` to handle `ValueGradient`, using
 `ForwardDiff`.
