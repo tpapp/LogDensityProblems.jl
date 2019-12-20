@@ -2,7 +2,7 @@ using LogDensityProblems, Test, Distributions, TransformVariables
 import LogDensityProblems: capabilities, dimension, logdensity
 using LogDensityProblems: logdensity_and_gradient, LogDensityOrder
 
-import ForwardDiff, Tracker, TransformVariables, Random
+import ForwardDiff, Tracker, TransformVariables, Random, Zygote
 using Parameters: @unpack
 
 ####
@@ -122,23 +122,17 @@ end
    end
 end
 
-if VERSION ≥ v"1.1.0"
-    # cf https://github.com/FluxML/Zygote.jl/issues/104
-    import Zygote
-
-    @testset "AD via Zygote" begin
-        # cf https://github.com/FluxML/Zygote.jl/issues/271
-        ℓ = TestLogDensity(test_logdensity1)
-        ∇ℓ = ADgradient(:Zygote, ℓ)
-        @test repr(∇ℓ) == "Zygote AD wrapper for " * repr(ℓ)
-        @test dimension(∇ℓ) == 3
-        @test capabilities(∇ℓ) ≡ LogDensityOrder(1)
-        for _ in 1:100
-            x = randn(3)
-            @test @inferred(logdensity(∇ℓ, x)) ≅ test_logdensity1(x)
-            @test @inferred(logdensity_and_gradient(∇ℓ, x)) ≅
-                (test_logdensity1(x), test_gradient(x))
-        end
+@testset "AD via Zygote" begin
+    ℓ = TestLogDensity(test_logdensity1)
+    ∇ℓ = ADgradient(:Zygote, ℓ)
+    @test repr(∇ℓ) == "Zygote AD wrapper for " * repr(ℓ)
+    @test dimension(∇ℓ) == 3
+    @test capabilities(∇ℓ) ≡ LogDensityOrder(1)
+    for _ in 1:100
+        x = randn(3)
+        @test @inferred(logdensity(∇ℓ, x)) ≅ test_logdensity1(x)
+        @test @inferred(logdensity_and_gradient(∇ℓ, x)) ≅
+            (test_logdensity1(x), test_gradient(x))
     end
 end
 

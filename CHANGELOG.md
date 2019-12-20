@@ -1,6 +1,8 @@
 # Unreleased
 
-## Major cleanup
+- test Zygote on all Julia branches [#55](https://github.com/tpapp/LogDensityProblems.jl/pull/55)
+
+## Major cleanup [#54](https://github.com/tpapp/LogDensityProblems.jl/pull/54)
 
 - remove support for ReverseDiff
 - replace Flux with Tracker
