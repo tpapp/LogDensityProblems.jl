@@ -1,5 +1,11 @@
 # Unreleased
 
+## Major cleanup
+
+- remove support for ReverseDiff
+- replace Flux with Tracker
+- bump Documenter version, minor docs cleanup
+
 # 0.9.2
 
 - follow API change in Zygote ([#51](https://github.com/tpapp/LogDensityProblems.jl/pull/51), thanks @scheidan)

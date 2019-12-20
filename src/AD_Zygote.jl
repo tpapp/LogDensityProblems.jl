@@ -5,12 +5,10 @@ struct ZygoteGradientLogDensity{L} <: ADGradientWrapper
 end
 
 """
-$(SIGNATURES)
+    ADgradient(:Zygote, ℓ)
+    ADgradient(Val(:Zygote), ℓ)
 
 Gradient using algorithmic/automatic differentiation via Zygote.
-
-!!! NOTE
-    Experimental, bug reports welcome.
 """
 ADgradient(::Val{:Zygote}, ℓ) = ZygoteGradientLogDensity(ℓ)
 

@@ -2,7 +2,7 @@ using LogDensityProblems, Test, Distributions, TransformVariables
 import LogDensityProblems: capabilities, dimension, logdensity
 using LogDensityProblems: logdensity_and_gradient, LogDensityOrder
 
-import ForwardDiff, Flux, ReverseDiff, TransformVariables, Random
+import ForwardDiff, Tracker, TransformVariables, Random
 using Parameters: @unpack
 
 ####
@@ -109,24 +109,10 @@ end
     @test length(b) ≤ 20
 end
 
-@testset "AD via ReverseDiff" begin
+@testset "AD via Tracker" begin
     ℓ = TestLogDensity()
-    ∇ℓ = ADgradient(:ReverseDiff, ℓ)
-    @test repr(∇ℓ) == "ReverseDiff AD wrapper for " * repr(ℓ)
-    @test dimension(∇ℓ) == 3
-    @test capabilities(∇ℓ) ≡ LogDensityOrder(1)
-    for _ in 1:100
-        x = randn(3)
-        @test @inferred(logdensity(∇ℓ, x)) ≅ test_logdensity(x)
-        @test @inferred(logdensity_and_gradient(∇ℓ, x)) ≅
-            (test_logdensity(x), test_gradient(x))
-    end
-end
-
-@testset "AD via Flux" begin
-    ℓ = TestLogDensity()
-    ∇ℓ = ADgradient(:Flux, ℓ)
-    @test repr(∇ℓ) == "Flux AD wrapper for " * repr(ℓ)
+    ∇ℓ = ADgradient(:Tracker, ℓ)
+    @test repr(∇ℓ) == "Tracker AD wrapper for " * repr(ℓ)
     @test dimension(∇ℓ) == 3
     @test capabilities(∇ℓ) ≡ LogDensityOrder(1)
     for _ in 1:100

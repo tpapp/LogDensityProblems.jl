@@ -18,13 +18,8 @@ git:
 matrix:
   allow_failures:
     - julia: nightly
-## uncomment and modify the following lines to manually install system packages
-#addons:
-#  apt: # apt-get for linux
-#    packages:
-#    - gfortran
-# before_script:
-#   - julia -e 'using Pkg; pkg"add Zygote#master IRTools#master"'
+before_script:
+  - julia -e 'using Pkg; pkg"add Zygote"'
 jobs:
   include:
     - stage: "Documentation"
