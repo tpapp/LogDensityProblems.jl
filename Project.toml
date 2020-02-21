@@ -14,7 +14,7 @@ Requires = "ae029012-a4dd-5104-9daa-d747884805df"
 TransformVariables = "84d833dd-6860-57f9-a1a7-6da5db126cff"
 
 [compat]
-ArgCheck = "^1, 2.0"
+ArgCheck = "^1, 2"
 BenchmarkTools = "^0.4"
 DiffResults = "^0.0, ^1.0"
 DocStringExtensions = "^0.8"
