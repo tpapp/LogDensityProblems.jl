@@ -3,7 +3,7 @@ import LogDensityProblems: capabilities, dimension, logdensity
 using LogDensityProblems: logdensity_and_gradient, LogDensityOrder
 
 import ForwardDiff, Tracker, TransformVariables, Random, Zygote
-using Parameters: @unpack
+using UnPack: @unpack
 
 ####
 #### test setup and utilities
