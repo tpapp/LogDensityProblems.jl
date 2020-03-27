@@ -16,7 +16,7 @@ export TransformedLogDensity, ADgradient
 
 using ArgCheck: @argcheck
 using DocStringExtensions: SIGNATURES, TYPEDEF
-using Parameters: @unpack
+using UnPack: @unpack
 import Random
 using Requires: @require
 import TransformVariables
