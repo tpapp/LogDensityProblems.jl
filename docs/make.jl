@@ -7,6 +7,7 @@ makedocs(
     clean = true,
     authors = "Tamás K. Papp",
     checkdocs = :export,
+    strict = true,
     pages = Any["Documentation" => "index.md"]
 )
 
