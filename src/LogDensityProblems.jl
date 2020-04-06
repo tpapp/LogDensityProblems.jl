@@ -142,7 +142,7 @@ methods recommend using `transformation` to avoid this. It is recommended that
 `log_density_function` is a callable object that also encapsulates the data for the problem.
 
 Use the property accessors `ℓ.transformation` and `ℓ.log_density_function` to access the
-arguments of `ℓ::TransformedLogDensity`, these are part of the API.
+arguments of `ℓ::TransformedLogDensity`, these are part of the public API.
 
 # Usage note
 
