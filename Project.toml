@@ -20,7 +20,7 @@ DiffResults = "^0.0, ^1.0"
 DocStringExtensions = "^0.8"
 Requires = "^0.5, 1.0"
 TransformVariables = "^0.2, ^0.3"
-UnPack = "0.1"
+UnPack = "0.1, 1.0"
 julia = "^1"
 
 [extras]
