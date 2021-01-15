@@ -131,8 +131,7 @@ end
     for _ in 1:100
         x = randn(3)
         @test @inferred(logdensity(∇ℓ, x)) ≅ test_logdensity1(x)
-        @test logdensity_and_gradient(∇ℓ, x) ≅
-            (test_logdensity1(x), test_gradient(x))
+        @test logdensity_and_gradient(∇ℓ, x) ≅ (test_logdensity1(x), test_gradient(x))
     end
 end
 
