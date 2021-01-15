@@ -1,7 +1,7 @@
 name = "LogDensityProblems"
 uuid = "6fdf6af0-433a-55f7-b3ed-c6c6e0b8df7c"
 authors = ["Tamas K. Papp <tkpapp@gmail.com>"]
-version = "0.10.3"
+version = "0.10.4"
 
 [deps]
 ArgCheck = "dce04be8-c92d-5529-be00-80e4d2c0e197"
@@ -14,7 +14,7 @@ TransformVariables = "84d833dd-6860-57f9-a1a7-6da5db126cff"
 UnPack = "3a884ed6-31ef-47d7-9d2a-63182c4928ed"
 
 [compat]
-ArgCheck = "^1, 2"
+ArgCheck = "1, 2"
 BenchmarkTools = "0.4, 0.5"
 DiffResults = "^0.0, 1"
 DocStringExtensions = "0.8"
