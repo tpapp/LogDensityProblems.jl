@@ -116,8 +116,12 @@ Return two values:
 
 - the log density as real number, which equivalent to `logdensity(ℓ, x)`
 
-- *if* the log density is finite, the gradient, a vector of real numbers, otherwise this
-   value is arbitrary and should be ignored.
+- *if* the log density is finite, the gradient, an `::AbstractVector` of real numbers,
+   otherwise this value is arbitrary and should be ignored.
+
+!!! note
+    Caller may assume ownership of results, ie that the gradient vector will not be
+    overwritten or reused for a different purpose.
 
 The first argument (the log density) can be shifted by a constant, see the note for
 [`logdensity`](@ref).
