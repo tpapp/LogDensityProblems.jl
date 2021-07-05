@@ -202,7 +202,11 @@ Wrap `P` using automatic differentiation to obtain a gradient.
 `kind` is usually a `Val` type with a symbol that refers to a package, for example
 ```julia
 ADgradient(Val(:ForwardDiff), P)
+ADgradient(Val(:ReverseDiff), P)
+ADgradient(Val(:Zygote), P)
 ```
+Some methods may be loaded only conditionally after the relevant package is loaded (eg
+`using Zygote`).
 
 The symbol can also be used directly as eg
 
@@ -212,10 +216,7 @@ ADgradient(:ForwardDiff, P)
 
 and should mostly be equivalent if the compiler manages to fold the constant.
 
-`parent` can be used to retrieve the original argument.
-
-See `methods(ADgradient)`. Note that **some methods are defined conditionally on the
-relevant package being loaded.**
+The function `parent` can be used to retrieve the original argument.
 """
 ADgradient(kind::Symbol, P; kwargs...) = ADgradient(Val{kind}(), P; kwargs...)
 
