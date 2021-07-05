@@ -162,6 +162,10 @@ function LogDensityProblems.logdensity_and_gradient(problem::NormalPosterior, x)
 end
 ```
 
+!!! note
+    If the gradient is a mutable vector (eg `Vector`), it should not be reused for another purpose. Practically, each call to [`LogDensityProblems.logdensity_and_gradient`](@ref) should allocate a new one, or use immutables like
+    `StaticArrays.SVector` for small dimensions.
+
 # Various utilities
 
 You may find these utilities useful for debugging and optimization.
