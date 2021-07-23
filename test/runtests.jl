@@ -1,4 +1,4 @@
-using LogDensityProblems, Test, Distributions, TransformVariables
+using LogDensityProblems, Test, Distributions, TransformVariables, BenchmarkTools
 import LogDensityProblems: capabilities, dimension, logdensity
 using LogDensityProblems: logdensity_and_gradient, LogDensityOrder
 
