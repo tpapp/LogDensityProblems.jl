@@ -1,7 +1,7 @@
 name = "LogDensityProblems"
 uuid = "6fdf6af0-433a-55f7-b3ed-c6c6e0b8df7c"
 authors = ["Tamas K. Papp <tkpapp@gmail.com>"]
-version = "0.11.3"
+version = "0.11.4"
 
 [deps]
 ArgCheck = "dce04be8-c92d-5529-be00-80e4d2c0e197"
@@ -27,6 +27,7 @@ BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
+Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 ReverseDiff = "37e2e3b7-166d-5795-8a7a-e32c996b4267"
 StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 StatsFuns = "4c63d2b9-4356-54db-8cca-17b64c39e42c"
@@ -35,4 +36,4 @@ Tracker = "9f7883ad-71c0-57eb-9f7f-b5c9e6d3789c"
 Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
 [targets]
-test = ["BenchmarkTools", "Distributions", "Documenter", "ForwardDiff", "Test", "StatsBase", "StatsFuns", "Tracker", "Zygote", "ReverseDiff"]
+test = ["BenchmarkTools", "Distributions", "Documenter", "ForwardDiff", "Pkg", "ReverseDiff", "StatsBase", "StatsFuns", "Test", "Tracker", "Zygote"]
