@@ -1,3 +1,14 @@
+@static if VERSION >= v"1.6"
+    # Enzyme only supports Julia >= 1.6
+    # We add it without messing with the existing, possibly precompiled, dependencies
+    using Pkg
+    Pkg.add(Pkg.PackageSpec(; name="Enzyme", uuid="7da242da-08ed-463a-9acd-ee780be4f1d9");
+            preserve=Pkg.PRESERVE_ALL)
+
+    import Enzyme
+    struct EnzymeTestMode <: Enzyme.Mode end
+end
+
 using LogDensityProblems, Test, Distributions, TransformVariables, BenchmarkTools
 import LogDensityProblems: capabilities, dimension, logdensity
 using LogDensityProblems: logdensity_and_gradient, LogDensityOrder
@@ -146,6 +157,39 @@ end
         x = randn(3)
         @test @inferred(logdensity(∇ℓ, x)) ≅ test_logdensity1(x)
         @test logdensity_and_gradient(∇ℓ, x) ≅ (test_logdensity1(x), test_gradient(x))
+    end
+end
+
+@static if VERSION >= v"1.6"
+    @testset "AD via Enzyme" begin
+        ℓ = TestLogDensity(test_logdensity1)
+
+        ∇ℓ_reverse = ADgradient(:Enzyme, ℓ)
+        @test ∇ℓ_reverse === ADgradient(:Enzyme, ℓ; mode=Enzyme.Reverse)
+        @test repr(∇ℓ_reverse) == "Enzyme AD wrapper for " * repr(ℓ) * " with reverse mode"
+
+        ∇ℓ_forward = ADgradient(:Enzyme, ℓ; mode=Enzyme.Forward)
+        ∇ℓ_forward_shadow = ADgradient(:Enzyme, ℓ;
+                                       mode=Enzyme.Forward,
+                                       shadow=Enzyme.onehot(Vector{Float64}(undef, dimension(ℓ))))
+        for ∇ℓ in (∇ℓ_forward, ∇ℓ_forward_shadow)
+            @test repr(∇ℓ) == "Enzyme AD wrapper for " * repr(ℓ) * " with forward mode"
+        end
+
+        for ∇ℓ in (∇ℓ_reverse, ∇ℓ_forward, ∇ℓ_forward_shadow)
+            @test dimension(∇ℓ) == 3
+            @test capabilities(∇ℓ) ≡ LogDensityOrder(1)
+            for _ in 1:100
+                x = randn(3)
+                @test @inferred(logdensity(∇ℓ, x)) ≅ test_logdensity1(x)
+                @test logdensity_and_gradient(∇ℓ, x) ≅ (test_logdensity1(x), test_gradient(x))
+            end
+        end
+
+        # Branches in `ADgradient`
+        @test_throws ArgumentError ADgradient(:Enzyme, ℓ; mode=EnzymeTestMode())
+        ∇ℓ = @test_logs (:info, "keyword argument `shadow` is ignored in reverse mode") ADgradient(:Enzyme, ℓ; shadow = (1,))
+        @test ∇ℓ.shadow === nothing
     end
 end
 
