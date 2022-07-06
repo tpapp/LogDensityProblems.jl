@@ -15,19 +15,33 @@ end
 
 Gradient using algorithmic/automatic differentiation via ReverseDiff.
 """
-ADgradient(::Val{:ReverseDiff}, ℓ) = begin
-    f = _logdensity_closure(ℓ)
-    x = rand(dimension(ℓ)) #init random parameters
-    tape = ReverseDiff.GradientTape(f, x)
-    compiledtape = ReverseDiff.compile(tape)
-    ReverseDiffLogDensity(ℓ, compiledtape)
+function ADgradient(::Val{:ReverseDiff}, ℓ;
+                    compile::Union{Val{true},Val{false}}=Val(false), x::Union{Nothing,AbstractVector}=nothing)
+    ReverseDiffLogDensity(ℓ, _compiledtape(ℓ, compile, x))
 end
 
-Base.show(io::IO, ∇ℓ::ReverseDiffLogDensity) = print(io, "ReverseDiff AD wrapper for ", ∇ℓ.ℓ)
+_compiledtape(ℓ, compile, x) = nothing
+_compiledtape(ℓ, ::Val{true}, ::Nothing) = _compiledtape(ℓ, Val(true), zeros(dimension(ℓ)))
+function _compiledtape(ℓ, ::Val{true}, x)
+    tape = ReverseDiff.GradientTape(Base.Fix1(logdensity, ℓ), x)
+    return ReverseDiff.compile(tape)
+end
 
-function logdensity_and_gradient(∇ℓ::ReverseDiffLogDensity, x::AbstractVector{T}) where {T}
+function Base.show(io::IO, ∇ℓ::ReverseDiffLogDensity)
+    print(io, "ReverseDiff AD wrapper for ", ∇ℓ.ℓ, " (")
+    if ∇ℓ.compiledtape === nothing
+        print(io, "no ")
+    end
+    print(io, "compiled tape)")
+end
+
+function logdensity_and_gradient(∇ℓ::ReverseDiffLogDensity, x::AbstractVector)
     @unpack ℓ, compiledtape = ∇ℓ
     buffer = _diffresults_buffer(ℓ, x)
-    result = ReverseDiff.gradient!(buffer, compiledtape, x)
+    if compiledtape === nothing
+        result = ReverseDiff.gradient!(buffer, Base.Fix1(logdensity, ℓ), x)
+    else
+        result = ReverseDiff.gradient!(buffer, compiledtape, x)
+    end
     _diffresults_extract(result)
 end
