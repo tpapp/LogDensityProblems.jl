@@ -10,10 +10,21 @@ struct ReverseDiffLogDensity{L,C} <: ADGradientWrapper
 end
 
 """
-    ADgradient(:ReverseDiff, ℓ)
-    ADgradient(Val(:ReverseDiff), ℓ)
+    ADgradient(:ReverseDiff, ℓ; compile=Val(false), x=nothing)
+    ADgradient(Val(:ReverseDiff), ℓ; compile=Val(false), x=nothing)
 
 Gradient using algorithmic/automatic differentiation via ReverseDiff.
+
+If `compile isa Val{true}`, a tape of the log density computation is created upon construction of the gradient function and used in every evaluation of the gradient.
+One may provide an example input `x::AbstractVector` of the log density function.
+If `x` is `nothing` (the default), the tape is created with input `zeros(dimension(ℓ))`.
+
+By default, no tape is created.
+
+!!! note
+    Using a compiled tape can lead to significant performance improvements when the gradient of the log density
+    is evaluated multiple times (possibly for different inputs).
+    However, if the log density contains branches, use of a compiled tape can lead to silently incorrect results.
 """
 function ADgradient(::Val{:ReverseDiff}, ℓ;
                     compile::Union{Val{true},Val{false}}=Val(false), x::Union{Nothing,AbstractVector}=nothing)
