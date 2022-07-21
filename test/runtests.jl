@@ -96,16 +96,42 @@ end
 ####
 
 @testset "AD via ReverseDiff" begin
-    ℓ = TestLogDensity(test_logdensity1)
-    ∇ℓ = ADgradient(:ReverseDiff, ℓ)
-    @test repr(∇ℓ) == "ReverseDiff AD wrapper for " * repr(ℓ)
-    @test dimension(∇ℓ) == 3
-    @test capabilities(∇ℓ) ≡ LogDensityOrder(1)
-    for _ in 1:100
-        x = randn(3)
-        @test @inferred(logdensity(∇ℓ, x)) ≅ test_logdensity1(x)
-        @test @inferred(logdensity_and_gradient(∇ℓ, x)) ≅
-            (test_logdensity1(x), test_gradient(x))
+    ℓ = TestLogDensity()
+
+    ∇ℓ_default = ADgradient(:ReverseDiff, ℓ)
+    ∇ℓ_nocompile = ADgradient(:ReverseDiff, ℓ; compile=Val(false))
+    for ∇ℓ in (∇ℓ_default, ∇ℓ_nocompile)
+        @test repr(∇ℓ) == "ReverseDiff AD wrapper for " * repr(ℓ) * " (no compiled tape)"
+    end
+
+    ∇ℓ_compile = ADgradient(:ReverseDiff, ℓ; compile=Val(true))
+    ∇ℓ_compile_x = ADgradient(:ReverseDiff, ℓ; compile=Val(true), x=rand(3))
+    for ∇ℓ in (∇ℓ_compile, ∇ℓ_compile_x)
+        @test repr(∇ℓ) == "ReverseDiff AD wrapper for " * repr(ℓ) * " (compiled tape)"
+    end
+
+    for ∇ℓ in (∇ℓ_default, ∇ℓ_nocompile, ∇ℓ_compile, ∇ℓ_compile_x)
+        @test dimension(∇ℓ) == 3
+        @test capabilities(∇ℓ) ≡ LogDensityOrder(1)
+
+        for _ in 1:100
+            x = rand(3)
+            @test @inferred(logdensity(∇ℓ, x)) ≅ test_logdensity(x)
+            @test @inferred(logdensity_and_gradient(∇ℓ, x)) ≅
+                (test_logdensity(x), test_gradient(x))
+
+            x = -x
+            @test @inferred(logdensity(∇ℓ, x)) ≅ test_logdensity(x)
+            if ∇ℓ.compiledtape === nothing
+                # Recompute tape => correct results
+                @test @inferred(logdensity_and_gradient(∇ℓ, x)) ≅
+                    (test_logdensity(x), zero(x))
+            else
+                # Tape not recomputed => incorrect results, uses always the same branch
+                @test @inferred(logdensity_and_gradient(∇ℓ, x)) ≅
+                    (test_logdensity1(x), test_gradient(x))
+            end
+        end
     end
 end
 
