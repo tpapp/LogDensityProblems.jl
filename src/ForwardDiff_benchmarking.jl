@@ -40,6 +40,6 @@ function benchmark_ForwardDiff_chunks(ℓ;
     map(chunks) do chunk
         ∇ℓ = ADgradient(Val(:ForwardDiff), ℓ; chunk = ForwardDiff.Chunk(chunk))
         markprogress && print(".")
-        chunk => @belapsed logdensity_and_gradient($(∇ℓ), $(x))
+        chunk => @belapsed logdensity_and_gradient_of($(∇ℓ), $(x))
     end
 end

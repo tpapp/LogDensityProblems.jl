@@ -10,10 +10,12 @@
 end
 
 using LogDensityProblems, Test, Distributions, TransformVariables, BenchmarkTools
-import LogDensityProblems: capabilities, dimension, logdensity
-using LogDensityProblems: logdensity_and_gradient, LogDensityOrder
+import LogDensityProblems: dimension
+using LogDensityProblems: logdensity_and_gradient_of, LogDensityOrder
 
+using DensityInterface
 import ForwardDiff, Tracker, TransformVariables, Random, Zygote, ReverseDiff
+using StaticNumbers
 using UnPack: @unpack
 
 ####
@@ -71,8 +73,10 @@ end
 struct TestLogDensity{F}
     ℓ::F
 end
-logdensity(ℓ::TestLogDensity, x) = ℓ.ℓ(x)
+DensityInterface.logdensityof(ℓ::TestLogDensity, x) = ℓ.ℓ(x)
+DensityInterface.DensityKind(::TestLogDensity) = DensityInterface.IsDensity()
 dimension(::TestLogDensity) = 3
+
 test_logdensity1(x) = -2*abs2(x[1]) - 3*abs2(x[2]) - 5*abs2(x[3])
 test_logdensity(x) = any(x .< 0) ? -Inf : test_logdensity1(x)
 test_gradient(x) = x .* [-4, -6, -10]
@@ -83,13 +87,7 @@ Base.show(io::IO, ::TestLogDensity) = print(io, "TestLogDensity")
 #### traits
 ####
 
-@test capabilities("a fish") ≡ nothing
-
-@testset "LogDensityOrder" begin
-    @test LogDensityOrder(1) == LogDensityOrder(1)
-    @test_throws ArgumentError LogDensityOrder(-1)
-    @test LogDensityOrder(2) ≥ LogDensityOrder(1)
-end
+@test LogDensityOrder("a fish") ≡ nothing
 
 ####
 #### AD backends
@@ -112,23 +110,23 @@ end
 
     for ∇ℓ in (∇ℓ_default, ∇ℓ_nocompile, ∇ℓ_compile, ∇ℓ_compile_x)
         @test dimension(∇ℓ) == 3
-        @test capabilities(∇ℓ) ≡ LogDensityOrder(1)
+        @test LogDensityOrder(∇ℓ) ≡ static(1)
 
         for _ in 1:100
             x = rand(3)
-            @test @inferred(logdensity(∇ℓ, x)) ≅ test_logdensity(x)
-            @test @inferred(logdensity_and_gradient(∇ℓ, x)) ≅
+            @test @inferred(logdensityof(∇ℓ, x)) ≅ test_logdensity(x)
+            @test @inferred(logdensity_and_gradient_of(∇ℓ, x)) ≅
                 (test_logdensity(x), test_gradient(x))
 
             x = -x
-            @test @inferred(logdensity(∇ℓ, x)) ≅ test_logdensity(x)
+            @test @inferred(logdensityof(∇ℓ, x)) ≅ test_logdensity(x)
             if ∇ℓ.compiledtape === nothing
                 # Recompute tape => correct results
-                @test @inferred(logdensity_and_gradient(∇ℓ, x)) ≅
+                @test @inferred(logdensity_and_gradient_of(∇ℓ, x)) ≅
                     (test_logdensity(x), zero(x))
             else
                 # Tape not recomputed => incorrect results, uses always the same branch
-                @test @inferred(logdensity_and_gradient(∇ℓ, x)) ≅
+                @test @inferred(logdensity_and_gradient_of(∇ℓ, x)) ≅
                     (test_logdensity1(x), test_gradient(x))
             end
         end
@@ -140,11 +138,11 @@ end
     ∇ℓ = ADgradient(:ForwardDiff, ℓ)
     @test repr(∇ℓ) == "ForwardDiff AD wrapper for " * repr(ℓ) * ", w/ chunk size 3"
     @test dimension(∇ℓ) == 3
-    @test capabilities(∇ℓ) ≡ LogDensityOrder(1)
+    @test LogDensityOrder(∇ℓ) ≡ static(1)
     for _ in 1:100
         x = randn(3)
-        @test @inferred(logdensity(∇ℓ, x)) ≅ test_logdensity(x)
-        @test @inferred(logdensity_and_gradient(∇ℓ, x)) ≅
+        @test @inferred(logdensityof(∇ℓ, x)) ≅ test_logdensity(x)
+        @test @inferred(logdensity_and_gradient_of(∇ℓ, x)) ≅
             (test_logdensity(x), test_gradient(x))
     end
 end
@@ -154,7 +152,7 @@ end
 end
 
 @testset "benchmark ForwardDiff chunk size" begin
-    ℓ = TransformedLogDensity(as(Array, 20), x -> -sum(abs2, x))
+    ℓ = TransformedLogDensity(as(Array, 20), DensityInterface.logfuncdensity(x -> -sum(abs2, x)))
     b = LogDensityProblems.benchmark_ForwardDiff_chunks(ℓ)
     @test b isa Vector{Pair{Int,Float64}}
     @test length(b) ≤ 20
@@ -165,11 +163,11 @@ end
     ∇ℓ = ADgradient(:Tracker, ℓ)
     @test repr(∇ℓ) == "Tracker AD wrapper for " * repr(ℓ)
     @test dimension(∇ℓ) == 3
-    @test capabilities(∇ℓ) ≡ LogDensityOrder(1)
+    @test LogDensityOrder(∇ℓ) ≡ static(1)
     for _ in 1:100
         x = randn(3)
-        @test @inferred(logdensity(∇ℓ, x)) ≅ test_logdensity(x)
-        @test @inferred(logdensity_and_gradient(∇ℓ, x)) ≅ (test_logdensity(x), test_gradient(x))
+        @test @inferred(logdensityof(∇ℓ, x)) ≅ test_logdensity(x)
+        @test @inferred(logdensity_and_gradient_of(∇ℓ, x)) ≅ (test_logdensity(x), test_gradient(x))
    end
 end
 
@@ -178,11 +176,11 @@ end
     ∇ℓ = ADgradient(:Zygote, ℓ)
     @test repr(∇ℓ) == "Zygote AD wrapper for " * repr(ℓ)
     @test dimension(∇ℓ) == 3
-    @test capabilities(∇ℓ) ≡ LogDensityOrder(1)
+    @test LogDensityOrder(∇ℓ) ≡ static(1)
     for _ in 1:100
         x = randn(3)
-        @test @inferred(logdensity(∇ℓ, x)) ≅ test_logdensity1(x)
-        @test logdensity_and_gradient(∇ℓ, x) ≅ (test_logdensity1(x), test_gradient(x))
+        @test @inferred(logdensityof(∇ℓ, x)) ≅ test_logdensity1(x)
+        @test logdensity_and_gradient_of(∇ℓ, x) ≅ (test_logdensity1(x), test_gradient(x))
     end
 end
 
@@ -204,11 +202,11 @@ end
 
         for ∇ℓ in (∇ℓ_reverse, ∇ℓ_forward, ∇ℓ_forward_shadow)
             @test dimension(∇ℓ) == 3
-            @test capabilities(∇ℓ) ≡ LogDensityOrder(1)
+            @test LogDensityOrder(∇ℓ) ≡ static(1)
             for _ in 1:100
                 x = randn(3)
-                @test @inferred(logdensity(∇ℓ, x)) ≅ test_logdensity1(x)
-                @test logdensity_and_gradient(∇ℓ, x) ≅ (test_logdensity1(x), test_gradient(x))
+                @test @inferred(logdensityof(∇ℓ, x)) ≅ test_logdensity1(x)
+                @test logdensity_and_gradient_of(∇ℓ, x) ≅ (test_logdensity1(x), test_gradient(x))
             end
         end
 
@@ -232,14 +230,14 @@ end
 @testset "transformed Bayesian problem" begin
     t = as((y = asℝ₊, ))
     d = LogNormal(1.0, 2.0)
-    logposterior = ((x, ), ) -> logpdf(d, x)
+    logposterior = logfuncdensity(((x, ), ) -> logpdf(d, x))
 
     # a Bayesian problem
     p = TransformedLogDensity(t, logposterior)
     @test repr(p) == "TransformedLogDensity of dimension 1"
     @test dimension(p) == 1
     @test p.transformation ≡ t
-    @test capabilities(p) == LogDensityOrder(0)
+    @test LogDensityOrder(p) == static(0)
 
     # gradient of a problem
     ∇p = ADgradient(:ForwardDiff, p)
@@ -249,9 +247,9 @@ end
     for _ in 1:100
         x = random_arg(t)
         θ, lj = transform_and_logjac(t, x)
-        px = logdensity(p, x)
+        px = logdensityof(p, x)
         @test logpdf(d, θ.y) + lj ≈ (px::Real)
-        px2, ∇px = logdensity_and_gradient(∇p, x)
+        px2, ∇px = logdensity_and_gradient_of(∇p, x)
         @test px2 == px
         @test ∇px ≈ [ForwardDiff.derivative(x -> logpdf(d, exp(x)) + x, x[1])]
     end
@@ -260,7 +258,7 @@ end
 @testset "-∞ log densities" begin
     t = as(Array, 2)
     validx = x -> all(x .> 0)
-    p = TransformedLogDensity(t, x -> validx(x) ?  sum(abs2, x)/2 : -Inf)
+    p = TransformedLogDensity(t, logfuncdensity(x -> validx(x) ?  sum(abs2, x)/2 : -Inf))
     ∇p = ADgradient(:ForwardDiff, p)
 
     @test dimension(p) == dimension(∇p) == TransformVariables.dimension(t)
@@ -268,8 +266,8 @@ end
 
     for _ in 1:100
         x = random_arg(t)
-        px = logdensity(∇p, x)
-        px_∇px = logdensity_and_gradient(∇p, x)
+        px = logdensityof(∇p, x)
+        px_∇px = logdensity_and_gradient_of(∇p, x)
         @test px isa Real
         @test px_∇px isa Tuple{Real,Any}
         @test first(px_∇px) ≡ px
@@ -285,7 +283,7 @@ end
 @testset "stresstest" begin
     @info "stress testing"
     ℓ = TestLogDensity(x -> all(x .< 0) ? error("invalid") : -sum(abs2, x))
-    failures = LogDensityProblems.stresstest(logdensity, ℓ; N = 500)
+    failures = LogDensityProblems.stresstest(logdensityof, ℓ; N = 500)
     @test 50 ≤ length(failures) ≤ 100
     @test all(x -> all(x .< 0), failures)
 end

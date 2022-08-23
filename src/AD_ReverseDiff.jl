@@ -34,7 +34,7 @@ end
 _compiledtape(ℓ, compile, x) = nothing
 _compiledtape(ℓ, ::Val{true}, ::Nothing) = _compiledtape(ℓ, Val(true), zeros(dimension(ℓ)))
 function _compiledtape(ℓ, ::Val{true}, x)
-    tape = ReverseDiff.GradientTape(Base.Fix1(logdensity, ℓ), x)
+    tape = ReverseDiff.GradientTape(logdensityof(ℓ), x)
     return ReverseDiff.compile(tape)
 end
 
@@ -46,11 +46,11 @@ function Base.show(io::IO, ∇ℓ::ReverseDiffLogDensity)
     print(io, "compiled tape)")
 end
 
-function logdensity_and_gradient(∇ℓ::ReverseDiffLogDensity, x::AbstractVector)
+function logdensity_and_gradient_of(∇ℓ::ReverseDiffLogDensity, x::AbstractVector)
     @unpack ℓ, compiledtape = ∇ℓ
     buffer = _diffresults_buffer(ℓ, x)
     if compiledtape === nothing
-        result = ReverseDiff.gradient!(buffer, Base.Fix1(logdensity, ℓ), x)
+        result = ReverseDiff.gradient!(buffer, logdensityof(ℓ), x)
     else
         result = ReverseDiff.gradient!(buffer, compiledtape, x)
     end

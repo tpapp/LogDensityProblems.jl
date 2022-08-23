@@ -5,10 +5,12 @@ version = "0.12.0"
 
 [deps]
 ArgCheck = "dce04be8-c92d-5529-be00-80e4d2c0e197"
+DensityInterface = "b429d917-457f-4dbc-8f4c-0cc954292b1d"
 DiffResults = "163ba53b-c6d8-5494-b064-1a9d43ac40c5"
 DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 Requires = "ae029012-a4dd-5104-9daa-d747884805df"
+StaticNumbers = "c5e4b96a-f99f-5557-8ed2-dc63ef9b5131"
 TransformVariables = "84d833dd-6860-57f9-a1a7-6da5db126cff"
 UnPack = "3a884ed6-31ef-47d7-9d2a-63182c4928ed"
 

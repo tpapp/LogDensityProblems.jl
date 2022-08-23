@@ -20,7 +20,7 @@ end
 """
 $(SIGNATURES)
 
-Extract a return value for [`logdensity_and_gradient`](@ref) from a DiffResults buffer,
+Extract a return value for [`logdensity_and_gradient_of`](@ref) from a DiffResults buffer,
 constructed with [`diffresults_buffer`](@ref). Gradient is not copied as caller created the
 vector.
 """

@@ -17,7 +17,7 @@ end
 _default_chunk(ℓ) = ForwardDiff.Chunk(dimension(ℓ))
 
 function _default_gradientconfig(ℓ, chunk::ForwardDiff.Chunk)
-    ForwardDiff.GradientConfig(Base.Fix1(logdensity, ℓ), zeros(dimension(ℓ)), chunk)
+    ForwardDiff.GradientConfig(logdensityof(ℓ), zeros(dimension(ℓ)), chunk)
 end
 
 function _default_gradientconfig(ℓ, chunk::Integer)
@@ -41,9 +41,9 @@ function ADgradient(::Val{:ForwardDiff}, ℓ;
     ForwardDiffLogDensity(ℓ, gradientconfig)
 end
 
-function logdensity_and_gradient(fℓ::ForwardDiffLogDensity, x::AbstractVector)
+function logdensity_and_gradient_of(fℓ::ForwardDiffLogDensity, x::AbstractVector)
     @unpack ℓ, gradientconfig = fℓ
     buffer = _diffresults_buffer(ℓ, x)
-    result = ForwardDiff.gradient!(buffer, Base.Fix1(logdensity, ℓ), x, gradientconfig)
+    result = ForwardDiff.gradient!(buffer, logdensityof(ℓ), x, gradientconfig)
     _diffresults_extract(result)
 end

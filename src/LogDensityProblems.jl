@@ -15,42 +15,26 @@ module LogDensityProblems
 export TransformedLogDensity, ADgradient
 
 using ArgCheck: @argcheck
+using DensityInterface
 using DocStringExtensions: SIGNATURES, TYPEDEF
-using UnPack: @unpack
 import Random
 using Requires: @require
+using StaticNumbers
 import TransformVariables
+using UnPack: @unpack
 
 ####
 #### interface for problems
 ####
 
-"""
-$(TYPEDEF)
-
-A trait that means that a log density supports evaluating derivatives up to order `K`.
-
-Typical values for `K` are `0` (just the log density) and `1` (log density and gradient).
-"""
-struct LogDensityOrder{K}
-    function LogDensityOrder{K}() where K
-        _K = Int(K)
-        @argcheck _K ≥ 0
-        new{_K}()
-    end
-end
-
-LogDensityOrder(K::Integer) = LogDensityOrder{K}()
-
-Base.isless(::LogDensityOrder{A}, ::LogDensityOrder{B}) where {A, B} = A ≤ B
 
 """
 $(SIGNATURES)
 
 Test if the type (or a value, for convenience) supports the log density interface.
 
-When `nothing` is returned, it doesn't support this interface.  When `LogDensityOrder{K}()`
-is returned (typically with `K == 0` or `K = 1`), derivatives up to order `K` are supported.
+When `nothing` is returned, it doesn't support this interface.  When `LogDensityOrder`
+is `K >= 1`), derivatives up to order `K` are supported.
 *All other return values are invalid*.
 
 # Interface description
@@ -59,62 +43,35 @@ The following methods need to be implemented for the interface:
 
 1. [`dimension`](@ref) returns the *dimension* of the domain,
 
-2. [`logdensity`](@ref) evaluates the log density at a given point.
+2. [`logdensityof`](@ref) evaluates the log density at a given point.
 
-3. [`logdensity_and_gradient`](@ref) when `K ≥ 1`.
+3. [`logdensity_and_gradient_of`](@ref) when `K ≥ 1`.
 
 See also [`LogDensityProblems.stresstest`](@ref) for stress testing.
 """
-capabilities(T::Type) = nothing
-
-capabilities(x) = capabilities(typeof(x)) # convenience function
-
+LogDensityOrder(x) = nothing
+    
 """
     dimension(ℓ)
 
-Dimension of the input vectors `x` for log density `ℓ`. See [`logdensity`](@ref),
-[`logdensity_and_gradient`](@ref).
+Dimension of the input vectors `x` for log density `ℓ`. See [`logdensityof`](@ref),
+[`logdensity_and_gradient_of`](@ref).
 
 !!! note
     This function is *distinct* from `TransformedVariables.dimension`.
 """
 function dimension end
 
-"""
-    logdensity(ℓ, x)
-
-Evaluate the log density `ℓ` at `x`, which has length compatible with its
-[`dimension`](@ref).
-
-Return a real number, which may or may not be finite (can also be `NaN`). Non-finite values
-other than `-Inf` are invalid but do not error, caller should deal with these appropriately.
-
-# Note about constants
-
-Log densities can be shifted by *the same constant*, as long as it is consistent between
-calls. For example,
-
-```julia
-logdensity(::StandardMultivariateNormal) = -0.5 * sum(abs2, x)
-```
-
-is a valid implementation for some callable `StandardMultivariateNormal` that would
-implement the standard multivariate normal distribution (dimension ``k``) with pdf
-```math
-(2\\pi)^{-k/2} e^{-x'x/2}
-```
-"""
-function logdensity end
 
 """
-    logdensity_and_gradient(ℓ, x)
+    logdensity_and_gradient_of(ℓ, x)
 
 Evaluate the log density `ℓ` and its gradient at `x`, which has length compatible with its
 [`dimension`](@ref).
 
 Return two values:
 
-- the log density as real number, which equivalent to `logdensity(ℓ, x)`
+- the log density as real number, which equivalent to `logdensityof(ℓ, x)`
 
 - *if* the log density is finite, the gradient, an `::AbstractVector` of real numbers,
    otherwise this value is arbitrary and should be ignored.
@@ -124,9 +81,9 @@ Return two values:
     overwritten or reused for a different purpose.
 
 The first argument (the log density) can be shifted by a constant, see the note for
-[`logdensity`](@ref).
+[`logdensityof`](@ref).
 """
-function logdensity_and_gradient end
+function logdensity_and_gradient_of end
 
 #####
 ##### Transformed log density (typically Bayesian inference)
@@ -150,7 +107,7 @@ arguments of `ℓ::TransformedLogDensity`, these are part of the public API.
 
 # Usage note
 
-This is the most convenient way to define log densities, as `capabilities`, `logdensity`,
+This is the most convenient way to define log densities, as `LogDensityOrder`, `logdensityof`,
 and `dimension` are automatically defined. To obtain a type that supports derivatives, use
 [`ADgradient`](@ref).
 """
@@ -163,13 +120,15 @@ function Base.show(io::IO, ℓ::TransformedLogDensity)
     print(io, "TransformedLogDensity of dimension $(dimension(ℓ))")
 end
 
-capabilities(::Type{<:TransformedLogDensity}) = LogDensityOrder{0}()
+LogDensityOrder(::TransformedLogDensity) = static(0)
 
 dimension(p::TransformedLogDensity) = TransformVariables.dimension(p.transformation)
 
-function logdensity(p::TransformedLogDensity, x::AbstractVector)
+DensityInterface.DensityKind(ℓ::TransformedLogDensity) = DensityInterface.DensityKind(ℓ.log_density_function)
+
+function DensityInterface.logdensityof(p::TransformedLogDensity, x::AbstractVector)
     @unpack transformation, log_density_function = p
-    TransformVariables.transform_logdensity(transformation, log_density_function, x)
+    TransformVariables.transform_logdensity(transformation, logdensityof(log_density_function), x)
 end
 
 #####
@@ -179,16 +138,18 @@ end
 """
 An abstract type that wraps another log density for calculating the gradient via AD.
 
-Automatically defines the methods `capabilities`, `dimension`, and `logdensity` forwarding
-to the field `ℓ`, subtypes should define a [`logdensity_and_gradientent`](@ref).
+Automatically defines the methods `LogDensityOrder`, `dimension`, and `logdensityof` forwarding
+to the field `ℓ`, subtypes should define a [`logdensity_and_gradient_of`](@ref).
 
 This is an implementation helper, not part of the API.
 """
 abstract type ADGradientWrapper end
 
-logdensity(ℓ::ADGradientWrapper, x::AbstractVector) = logdensity(ℓ.ℓ, x)
+DensityInterface.logdensityof(ℓ::ADGradientWrapper, x::AbstractVector) = logdensityof(ℓ.ℓ, x)
 
-capabilities(::Type{<:ADGradientWrapper}) = LogDensityOrder{1}()
+DensityInterface.DensityKind(ℓ::ADGradientWrapper) = DensityInterface.DensityKind(ℓ.ℓ)
+
+LogDensityOrder(::ADGradientWrapper) = static(1)
 
 dimension(ℓ::ADGradientWrapper) = dimension(ℓ.ℓ)
 
@@ -256,8 +217,8 @@ Test `ℓ` with random values.
 `N` random vectors are drawn from a standard multivariate Cauchy distribution, scaled with
 `scale` (which can be a scalar or a conformable vector).
 
-Each random vector is then used as an argument in `f(ℓ, ...)`. `logdensity` and
-`logdensity_and_gradient` are  recommended for `f`.
+Each random vector is then used as an argument in `f(ℓ, ...)`. `logdensityof` and
+`logdensity_and_gradient_of` are  recommended for `f`.
 
 In case the call produces an error, the value is recorded as a failure, which are returned
 by the function.

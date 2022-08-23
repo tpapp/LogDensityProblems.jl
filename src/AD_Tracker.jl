@@ -20,9 +20,9 @@ ADgradient(::Val{:Tracker}, ℓ) = TrackerGradientLogDensity(ℓ)
 
 Base.show(io::IO, ∇ℓ::TrackerGradientLogDensity) = print(io, "Tracker AD wrapper for ", ∇ℓ.ℓ)
 
-function logdensity_and_gradient(∇ℓ::TrackerGradientLogDensity, x::AbstractVector{T}) where {T}
+function logdensity_and_gradient_of(∇ℓ::TrackerGradientLogDensity, x::AbstractVector{T}) where {T}
     @unpack ℓ = ∇ℓ
-    y, back = Tracker.forward(x -> logdensity(ℓ, x), x)
+    y, back = Tracker.forward(logdensityof(ℓ), x)
     yval = Tracker.data(y)
     # work around https://github.com/FluxML/Flux.jl/issues/497
     z = T <: Real ? zero(T) : 0.0
