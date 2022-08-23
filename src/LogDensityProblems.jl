@@ -62,6 +62,7 @@ Dimension of the input vectors `x` for log density `ℓ`. See [`logdensityof`](@
 """
 function dimension end
 
+Base.@deprecate logdensity(ℓ, x) DensityInterface.logdensityof(ℓ, x)
 
 """
     logdensity_and_gradient_of(ℓ, x)
