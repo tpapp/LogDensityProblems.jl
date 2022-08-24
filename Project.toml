@@ -1,20 +1,20 @@
 name = "LogDensityProblems"
 uuid = "6fdf6af0-433a-55f7-b3ed-c6c6e0b8df7c"
 authors = ["Tamas K. Papp <tkpapp@gmail.com>"]
-version = "0.12.0"
+version = "0.13.0"
 
 [deps]
 ArgCheck = "dce04be8-c92d-5529-be00-80e4d2c0e197"
-DiffResults = "163ba53b-c6d8-5494-b064-1a9d43ac40c5"
+ChangesOfVariables = "9e997f8a-9a97-42d5-a9f1-ce6bfc15e2c0"
 DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 Requires = "ae029012-a4dd-5104-9daa-d747884805df"
-TransformVariables = "84d833dd-6860-57f9-a1a7-6da5db126cff"
 UnPack = "3a884ed6-31ef-47d7-9d2a-63182c4928ed"
 
 [compat]
 ArgCheck = "1, 2"
 BenchmarkTools = "1"
+ChangesOfVariables = "0.1.3"
 DiffResults = "0.0, 1"
 DocStringExtensions = "0.8, 0.9"
 Requires = "0.5, 1"
@@ -24,6 +24,7 @@ julia = "1"
 
 [extras]
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
+DiffResults = "163ba53b-c6d8-5494-b064-1a9d43ac40c5"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
@@ -33,7 +34,8 @@ StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 StatsFuns = "4c63d2b9-4356-54db-8cca-17b64c39e42c"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 Tracker = "9f7883ad-71c0-57eb-9f7f-b5c9e6d3789c"
+TransformVariables = "84d833dd-6860-57f9-a1a7-6da5db126cff"
 Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
 [targets]
-test = ["BenchmarkTools", "Distributions", "Documenter", "ForwardDiff", "Pkg", "ReverseDiff", "StatsBase", "StatsFuns", "Test", "Tracker", "Zygote"]
+test = ["BenchmarkTools", "DiffResults", "Distributions", "Documenter", "ForwardDiff", "Pkg", "ReverseDiff", "StatsBase", "StatsFuns", "Test", "Tracker", "TransformVariables", "Zygote"]

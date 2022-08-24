@@ -19,7 +19,7 @@ using DocStringExtensions: SIGNATURES, TYPEDEF
 using UnPack: @unpack
 import Random
 using Requires: @require
-import TransformVariables
+import ChangesOfVariables
 
 ####
 #### interface for problems
@@ -133,29 +133,35 @@ function logdensity_and_gradient end
 #####
 
 """
-    TransformedLogDensity(transformation, log_density_function)
+    TransformedLogDensity(transform, log_density_function)
 
-A problem in Bayesian inference. Vectors of length compatible with the dimension (obtained
-from `transformation`) are transformed into a general object `θ` (unrestricted type, but a
-named tuple is recommended for clean code), correcting for the log Jacobian determinant of
-the transformation.
+A problem in Bayesian inference. Vectors `x` of length compatible with the dimension are
+transformed into a general object `θ = transform(x)` (unrestricted type, but a named tuple
+is recommended for clean code), correcting for the log Jacobian determinant of the
+transformation.
+
+`transform` has to support `ChangesOfVariables.with_logabsdet_jacobian(transform, x)`.
+For instance, it can be constructed with `TransformVariables.transform(t)` from a
+transformation supported by TransformVariables.jl.
 
 `log_density_function(θ)` is expected to return *real numbers*. For zero densities or
 infeasible `θ`s, `-Inf` or similar should be returned, but for efficiency of inference most
 methods recommend using `transformation` to avoid this. It is recommended that
 `log_density_function` is a callable object that also encapsulates the data for the problem.
 
-Use the property accessors `ℓ.transformation` and `ℓ.log_density_function` to access the
+Use the property accessors `ℓ.transform` and `ℓ.log_density_function` to access the
 arguments of `ℓ::TransformedLogDensity`, these are part of the public API.
 
 # Usage note
 
-This is the most convenient way to define log densities, as `capabilities`, `logdensity`,
-and `dimension` are automatically defined. To obtain a type that supports derivatives, use
-[`ADgradient`](@ref).
+This is the most convenient way to define log densities, as `capabilities` and `logdensity`
+are automatically defined.
+If `transform` is constructed via `TransformVariables.transform`, then `dimension` of the
+transformed log density function is automatically defined as well.
+To obtain a type that supports derivatives, use [`ADgradient`](@ref).
 """
-struct TransformedLogDensity{T <: TransformVariables.AbstractTransform, L}
-    transformation::T
+struct TransformedLogDensity{T, L}
+    transform::T
     log_density_function::L
 end
 
@@ -165,11 +171,14 @@ end
 
 capabilities(::Type{<:TransformedLogDensity}) = LogDensityOrder{0}()
 
-dimension(p::TransformedLogDensity) = TransformVariables.dimension(p.transformation)
-
 function logdensity(p::TransformedLogDensity, x::AbstractVector)
-    @unpack transformation, log_density_function = p
-    TransformVariables.transform_logdensity(transformation, log_density_function, x)
+    @unpack transform, log_density_function = p
+    y_ladj = ChangesOfVariables.with_logabsdet_jacobian(transform, x)
+    if y_ladj isa ChangesOfVariables.NoLogAbsDetJacobian
+        error("could not correct for the log Jacobian determinant of the transformation")
+    end
+    y, ladj = y_ladj
+    return ladj + log_density_function(y)
 end
 
 #####
@@ -230,6 +239,7 @@ end
 ####
 
 function __init__()
+    @require TransformVariables = "84d833dd-6860-57f9-a1a7-6da5db126cff" include("TransformVariables_helpers.jl")
     @require DiffResults="163ba53b-c6d8-5494-b064-1a9d43ac40c5" include("DiffResults_helpers.jl")
     @require ForwardDiff="f6369f11-7733-5829-9624-2563aa707210" begin
         include("AD_ForwardDiff.jl")

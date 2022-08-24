@@ -238,13 +238,13 @@ end
     p = TransformedLogDensity(t, logposterior)
     @test repr(p) == "TransformedLogDensity of dimension 1"
     @test dimension(p) == 1
-    @test p.transformation ≡ t
+    @test p.transform ≡ TransformVariables.transform(t)
     @test capabilities(p) == LogDensityOrder(0)
 
     # gradient of a problem
     ∇p = ADgradient(:ForwardDiff, p)
     @test dimension(∇p) == 1
-    @test parent(∇p).transformation ≡ t
+    @test parent(∇p).transform ≡ TransformVariables.transform(t)
 
     for _ in 1:100
         x = random_arg(t)
@@ -264,7 +264,7 @@ end
     ∇p = ADgradient(:ForwardDiff, p)
 
     @test dimension(p) == dimension(∇p) == TransformVariables.dimension(t)
-    @test p.transformation ≡ parent(∇p).transformation ≡ t
+    @test p.transform ≡ parent(∇p).transform ≡ TransformVariables.transform(t)
 
     for _ in 1:100
         x = random_arg(t)
