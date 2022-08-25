@@ -20,8 +20,6 @@ A standard multivaritate normal or Cauchy is used, depending on `cauchy`, then s
 `scale`. `rng` is the random number generator used.
 
 Not exported, but part of the API.
-
-$(_RANDOM_REALS_KWARGS_DOC)
 """
 function random_reals(n::Integer; scale::Real = 1, cauchy::Bool = false,
                       rng::AbstractRNG = default_rng())
