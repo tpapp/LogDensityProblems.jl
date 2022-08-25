@@ -25,7 +25,7 @@ Not exported, but part of the API.
 
 $(_RANDOM_REALS_KWARGS_DOC)
 """
-random_real(; scale::Real = 1, cauchy::Bool = false, rng::AbstractRNG = GLOBAL_RNG) =
+random_real(; scale::Real = 1, cauchy::Bool = false, rng::AbstractRNG = default_rng()) =
     randn(rng) * _random_reals_scale(rng, scale, cauchy)
 
 """
@@ -38,7 +38,7 @@ Not exported, but part of the API.
 $(_RANDOM_REALS_KWARGS_DOC)
 """
 function random_reals(n::Integer; scale::Real = 1, cauchy::Bool = false,
-                      rng::AbstractRNG = GLOBAL_RNG)
+                      rng::AbstractRNG = default_rng())
     randn(rng, n) .* _random_reals_scale(rng, scale, cauchy)
 end
 
@@ -62,7 +62,7 @@ by the function.
 
 Not exported, but part of the API.
 """
-function stresstest(f, ℓ; N = 1000, rng::AbstractRNG = GLOBAL_RNG, scale = 1)
+function stresstest(f, ℓ; N = 1000, rng::AbstractRNG = default_rng(), scale = 1)
     failures = Vector{Float64}[]
     d = dimension(ℓ)
     for _ in 1:N

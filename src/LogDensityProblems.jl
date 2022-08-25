@@ -16,7 +16,7 @@ export ADgradient
 
 using ArgCheck: @argcheck
 using DocStringExtensions: SIGNATURES, TYPEDEF
-using Random: AbstractRNG, GLOBAL_RNG
+using Random: AbstractRNG, default_rng
 using Requires: @require
 using UnPack: @unpack
 
