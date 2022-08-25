@@ -6,32 +6,18 @@
 #### random reals
 ####
 
-"Shared part of docstrings for keyword arguments of or passed to [`random_reals`](@ref)."
-const _RANDOM_REALS_KWARGS_DOC = """
-A standard multivaritate normal or Cauchy is used, depending on `cauchy`, then scaled with
-`scale`. `rng` is the random number generator used.
-"""
-
 function _random_reals_scale(rng::AbstractRNG, scale::Real, cauchy::Bool)
     cauchy ? scale / abs2(randn(rng)) : scale * 1.0
 end
 
-"""
-$(SIGNATURES)
-
-Random real number.
-
-Not exported, but part of the API.
-
-$(_RANDOM_REALS_KWARGS_DOC)
-"""
-random_real(; scale::Real = 1, cauchy::Bool = false, rng::AbstractRNG = default_rng()) =
-    randn(rng) * _random_reals_scale(rng, scale, cauchy)
 
 """
 $(SIGNATURES)
 
 Random vector in ``ℝⁿ`` of length `n`.
+
+A standard multivaritate normal or Cauchy is used, depending on `cauchy`, then scaled with
+`scale`. `rng` is the random number generator used.
 
 Not exported, but part of the API.
 
