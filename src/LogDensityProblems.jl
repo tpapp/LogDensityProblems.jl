@@ -16,9 +16,9 @@ export ADgradient
 
 using ArgCheck: @argcheck
 using DocStringExtensions: SIGNATURES, TYPEDEF
-using UnPack: @unpack
-import Random
+using Random: AbstractRNG, GLOBAL_RNG
 using Requires: @require
+using UnPack: @unpack
 
 ####
 #### interface for problems
@@ -199,38 +199,6 @@ function __init__()
     @require Enzyme="7da242da-08ed-463a-9acd-ee780be4f1d9" include("AD_Enzyme.jl")
 end
 
-####
-#### stress testing
-####
-
-"""
-$(SIGNATURES)
-
-Test `ℓ` with random values.
-
-`N` random vectors are drawn from a standard multivariate Cauchy distribution, scaled with
-`scale` (which can be a scalar or a conformable vector).
-
-Each random vector is then used as an argument in `f(ℓ, ...)`. `logdensity` and
-`logdensity_and_gradient` are  recommended for `f`.
-
-In case the call produces an error, the value is recorded as a failure, which are returned
-by the function.
-
-Not exported, but part of the API.
-"""
-function stresstest(f, ℓ; N = 1000, rng::Random.AbstractRNG = Random.GLOBAL_RNG, scale = 1)
-    failures = Vector{Float64}[]
-    d = dimension(ℓ)
-    for _ in 1:N
-        x = TransformVariables.random_reals(d; scale = scale, cauchy = true, rng = rng)
-        try
-            f(ℓ, x)
-        catch e
-            push!(failures, x)
-        end
-    end
-    failures
-end
+include("utilities.jl")
 
 end # module

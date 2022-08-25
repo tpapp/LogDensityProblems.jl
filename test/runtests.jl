@@ -216,42 +216,15 @@ end
     end
 end
 
+@testset "ADgradient missing method" begin
+    msg = "Don't know how to AD with Foo, consider `import Foo` if there is such a package."
+    @test_logs((:info, msg), @test_throws(MethodError, ADgradient(:Foo, TestLogDensity2())))
+end
+
 @testset "benchmark ForwardDiff chunk size" begin
     b = LogDensityProblems.benchmark_ForwardDiff_chunks(TestLogDensity2())
     @test b isa Vector{Pair{Int,Float64}}
     @test length(b) ≤ 20
-end
-
-####
-#### transformed Bayesian problem
-####
-
-@testset "transformed Bayesian problem" begin
-    t = as((y = asℝ₊, ))
-    d = LogNormal(1.0, 2.0)
-    logposterior = ((x, ), ) -> logpdf(d, x)
-
-    # a Bayesian problem
-    p = TransformedLogDensity(t, logposterior)
-    @test repr(p) == "TransformedLogDensity of dimension 1"
-    @test dimension(p) == 1
-    @test p.transformation ≡ t
-    @test capabilities(p) == LogDensityOrder(0)
-
-    # gradient of a problem
-    ∇p = ADgradient(:ForwardDiff, p)
-    @test dimension(∇p) == 1
-    @test parent(∇p).transformation ≡ t
-
-    for _ in 1:100
-        x = random_arg(t)
-        θ, lj = transform_and_logjac(t, x)
-        px = logdensity(p, x)
-        @test logpdf(d, θ.y) + lj ≈ (px::Real)
-        px2, ∇px = logdensity_and_gradient(∇p, x)
-        @test px2 == px
-        @test ∇px ≈ [ForwardDiff.derivative(x -> logpdf(d, exp(x)) + x, x[1])]
-    end
 end
 
 @testset "stresstest" begin
