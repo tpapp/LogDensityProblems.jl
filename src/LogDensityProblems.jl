@@ -159,6 +159,8 @@ struct TransformedLogDensity{T <: TransformVariables.AbstractTransform, L}
     log_density_function::L
 end
 
+Base.@deprecate_moved TransformedLogDensity "TransformedLogDensities.TransformedLogDensity"
+
 function Base.show(io::IO, ℓ::TransformedLogDensity)
     print(io, "TransformedLogDensity of dimension $(dimension(ℓ))")
 end
