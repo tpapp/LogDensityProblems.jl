@@ -10,7 +10,6 @@ function _random_reals_scale(rng::AbstractRNG, scale::Real, cauchy::Bool)
     cauchy ? scale / abs2(randn(rng)) : scale * 1.0
 end
 
-
 """
 $(SIGNATURES)
 
