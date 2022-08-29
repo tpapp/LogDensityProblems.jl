@@ -106,7 +106,7 @@ LogDensityProblems.logdensity(ℓ, zeros(2))
 
 ## Manual unpacking and transformation
 
-If you prefer to implement the transformation yourself, you just have to define the following three methods for your problem: declare that it can evaluate log densities (but not their gradient, hence the `0` order), allow the dimension of the problem to be queried, and then finally code the density calculation with the transformation. (Note that using [`TransformedLogDensity`](@ref) takes care of all of these for you, as shown above).
+If you prefer to implement the transformation yourself, you just have to define the following three methods for your problem: declare that it can evaluate log densities (but not their gradient, hence the `0` order), allow the dimension of the problem to be queried, and then finally code the density calculation with the transformation. (Note that using `TransformedLogDensities.TransformedLogDensity` takes care of all of these for you, as shown above).
 
 ```@example 1
 function LogDensityProblems.capabilities(::Type{<:NormalPosterior})

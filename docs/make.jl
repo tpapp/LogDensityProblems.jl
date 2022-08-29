@@ -1,4 +1,4 @@
-using Documenter, LogDensityProblems, ForwardDiff, Tracker, Zygote, BenchmarkTools
+using Documenter, LogDensityProblems, ForwardDiff, Tracker, Zygote, BenchmarkTools, TransformedLogDensities
 
 makedocs(
     sitename = "LogDensityProblems.jl",
