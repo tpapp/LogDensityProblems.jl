@@ -15,6 +15,10 @@ A common framework for implementing and using log densities for inference, provi
 
 3. Various utility functions for debugging and testing log densities.
 
-**NOTE** As of version FIXME, transformed log densities have been moved to FIXME
+**NOTE** As of version 1.0, transformed log densities have been moved to [TransformedLogDensities.jl](https://github.com/tpapp/TransformedLogDensities.jl). Existing code that uses `TransformedLogDensity` should add
+```
+using TransformedLogDensities
+```
+or equivalent.
 
 See the [documentation](https://tpapp.github.io/LogDensityProblems.jl/dev) for details.
