@@ -201,4 +201,6 @@ end
 
 include("utilities.jl")
 
+Base.@deprecate_moved TransformedLogDensity "TransformedLogDensities"
+
 end # module
