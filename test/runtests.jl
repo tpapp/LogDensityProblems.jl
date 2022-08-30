@@ -9,11 +9,11 @@
     struct EnzymeTestMode <: Enzyme.Mode end
 end
 
-using LogDensityProblems, Test, Distributions, TransformVariables, BenchmarkTools
+using LogDensityProblems, Test, Distributions, BenchmarkTools
 import LogDensityProblems: capabilities, dimension, logdensity
 using LogDensityProblems: logdensity_and_gradient, LogDensityOrder
 
-import ForwardDiff, Tracker, TransformVariables, Random, Zygote, ReverseDiff
+import ForwardDiff, Tracker, Random, Zygote, ReverseDiff
 using UnPack: @unpack
 
 ####
@@ -65,7 +65,7 @@ end
 end
 
 ###
-### simple log density for testing
+### simple log densities for testing
 ###
 
 struct TestLogDensity{F}
@@ -78,6 +78,10 @@ test_logdensity(x) = any(x .< 0) ? -Inf : test_logdensity1(x)
 test_gradient(x) = x .* [-4, -6, -10]
 TestLogDensity() = TestLogDensity(test_logdensity) # default: -Inf for negative input
 Base.show(io::IO, ::TestLogDensity) = print(io, "TestLogDensity")
+
+struct TestLogDensity2 end
+logdensity(::TestLogDensity2, x) = -sum(abs2, x)
+dimension(::TestLogDensity2) = 20
 
 ####
 #### traits
@@ -153,13 +157,6 @@ end
     @test LogDensityProblems.heuristic_chunks(82) == vcat(1:4:81, [82])
 end
 
-@testset "benchmark ForwardDiff chunk size" begin
-    ℓ = TransformedLogDensity(as(Array, 20), x -> -sum(abs2, x))
-    b = LogDensityProblems.benchmark_ForwardDiff_chunks(ℓ)
-    @test b isa Vector{Pair{Int,Float64}}
-    @test length(b) ≤ 20
-end
-
 @testset "AD via Tracker" begin
     ℓ = TestLogDensity()
     ∇ℓ = ADgradient(:Tracker, ℓ)
@@ -221,65 +218,13 @@ end
 
 @testset "ADgradient missing method" begin
     msg = "Don't know how to AD with Foo, consider `import Foo` if there is such a package."
-    P = TransformedLogDensity(as(Array, 1), x -> sum(abs2, x))
-    @test_logs((:info, msg), @test_throws(MethodError, ADgradient(:Foo, P)))
+    @test_logs((:info, msg), @test_throws(MethodError, ADgradient(:Foo, TestLogDensity2())))
 end
 
-####
-#### transformed Bayesian problem
-####
-
-@testset "transformed Bayesian problem" begin
-    t = as((y = asℝ₊, ))
-    d = LogNormal(1.0, 2.0)
-    logposterior = ((x, ), ) -> logpdf(d, x)
-
-    # a Bayesian problem
-    p = TransformedLogDensity(t, logposterior)
-    @test repr(p) == "TransformedLogDensity of dimension 1"
-    @test dimension(p) == 1
-    @test p.transformation ≡ t
-    @test capabilities(p) == LogDensityOrder(0)
-
-    # gradient of a problem
-    ∇p = ADgradient(:ForwardDiff, p)
-    @test dimension(∇p) == 1
-    @test parent(∇p).transformation ≡ t
-
-    for _ in 1:100
-        x = random_arg(t)
-        θ, lj = transform_and_logjac(t, x)
-        px = logdensity(p, x)
-        @test logpdf(d, θ.y) + lj ≈ (px::Real)
-        px2, ∇px = logdensity_and_gradient(∇p, x)
-        @test px2 == px
-        @test ∇px ≈ [ForwardDiff.derivative(x -> logpdf(d, exp(x)) + x, x[1])]
-    end
-end
-
-@testset "-∞ log densities" begin
-    t = as(Array, 2)
-    validx = x -> all(x .> 0)
-    p = TransformedLogDensity(t, x -> validx(x) ?  sum(abs2, x)/2 : -Inf)
-    ∇p = ADgradient(:ForwardDiff, p)
-
-    @test dimension(p) == dimension(∇p) == TransformVariables.dimension(t)
-    @test p.transformation ≡ parent(∇p).transformation ≡ t
-
-    for _ in 1:100
-        x = random_arg(t)
-        px = logdensity(∇p, x)
-        px_∇px = logdensity_and_gradient(∇p, x)
-        @test px isa Real
-        @test px_∇px isa Tuple{Real,Any}
-        @test first(px_∇px) ≡ px
-        if validx(x)
-            @test px ≈ sum(abs2, x)/2
-            @test last(px_∇px) ≈ x
-        else
-            @test isinf(px)
-        end
-    end
+@testset "benchmark ForwardDiff chunk size" begin
+    b = LogDensityProblems.benchmark_ForwardDiff_chunks(TestLogDensity2())
+    @test b isa Vector{Pair{Int,Float64}}
+    @test length(b) ≤ 20
 end
 
 @testset "stresstest" begin

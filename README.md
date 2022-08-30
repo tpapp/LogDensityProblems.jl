@@ -13,8 +13,12 @@ A common framework for implementing and using log densities for inference, provi
 
 2. The [`ADgradient`](https://tamaspapp.eu/LogDensityProblems.jl/dev/#LogDensityProblems.ADgradient) which makes objects that support `logdensity` to calculate log density *values* calculate log density *gradients* using various automatic differentiation packages.
 
-3. The wrapper [`TransformedLogDensity`](https://tamaspapp.eu/LogDensityProblems.jl/dev/#LogDensityProblems.TransformedLogDensity) using the [TransformVariables.jl](https://github.com/tpapp/TransformVariables.jl) package, allowing callables that take a set of parameters transformed from a flat vector of real numbers to support the `logdensity` interface.
+3. Various utility functions for debugging and testing log densities.
 
-4. Various utility functions for debugging and testing log densities.
+**NOTE** As of version 1.0, transformed log densities have been moved to [TransformedLogDensities.jl](https://github.com/tpapp/TransformedLogDensities.jl). Existing code that uses `TransformedLogDensity` should add
+```
+using TransformedLogDensities
+```
+or equivalent.
 
 See the [documentation](https://tpapp.github.io/LogDensityProblems.jl/dev) for details.

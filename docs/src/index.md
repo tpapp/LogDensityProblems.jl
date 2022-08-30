@@ -87,8 +87,11 @@ problem((μ = 0.0, σ = 1.0))
 
 In our example, we require ``\sigma > 0``, otherwise the problem is meaningless. However, many MCMC samplers prefer to operate on *unconstrained* spaces ``\mathbb{R}^n``. The TransformVariables package was written to transform unconstrained to constrained spaces, and help with the log Jacobian correction (more on that later). That package has detailed documentation, now we just define a transformation from a length 2 vector to a `NamedTuple` with fields `μ` (unconstrained) and `σ > 0`.
 
+!!! note
+    Since version 1.0, TransformedLogDensity has been moved to the package TransformedLogDensities.
+
 ```@repl 1
-using LogDensityProblems, TransformVariables
+using LogDensityProblems, TransformVariables, TransformedLogDensities
 ℓ = TransformedLogDensity(as((μ = asℝ, σ = asℝ₊)), problem)
 ```
 
@@ -101,13 +104,9 @@ LogDensityProblems.logdensity(ℓ, zeros(2))
 !!! note
     Before running time-consuming algorithms like MCMC, it is advisable to test and benchmark your log density evaluations separately. The same applies to [`LogDensityProblems.logdensity_and_gradient`](@ref).
 
-```@docs
-TransformedLogDensity
-```
-
 ## Manual unpacking and transformation
 
-If you prefer to implement the transformation yourself, you just have to define the following three methods for your problem: declare that it can evaluate log densities (but not their gradient, hence the `0` order), allow the dimension of the problem to be queried, and then finally code the density calculation with the transformation. (Note that using [`TransformedLogDensity`](@ref) takes care of all of these for you, as shown above).
+If you prefer to implement the transformation yourself, you just have to define the following three methods for your problem: declare that it can evaluate log densities (but not their gradient, hence the `0` order), allow the dimension of the problem to be queried, and then finally code the density calculation with the transformation. (Note that using `TransformedLogDensities.TransformedLogDensity` takes care of all of these for you, as shown above).
 
 ```@example 1
 function LogDensityProblems.capabilities(::Type{<:NormalPosterior})
