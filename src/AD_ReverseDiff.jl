@@ -4,6 +4,8 @@
 
 import .ReverseDiff
 
+import DiffResults # should load DiffResults_helpers.jl
+
 struct ReverseDiffLogDensity{L,C} <: ADGradientWrapper
     ℓ::L
     compiledtape::C
