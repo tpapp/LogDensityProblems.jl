@@ -4,7 +4,7 @@
 
 import .ForwardDiff
 
-import ForwardDiff.DiffResults # should load DiffResults_helpers.jl
+import .ForwardDiff.DiffResults # should load DiffResults_helpers.jl
 
 struct ForwardDiffLogDensity{L, C} <: ADGradientWrapper
     ℓ::L
