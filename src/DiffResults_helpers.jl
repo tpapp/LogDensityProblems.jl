@@ -14,7 +14,7 @@ Allocate a DiffResults buffer for a gradient, taking the element type of `x` int
 function _diffresults_buffer(ℓ, x)
     T = eltype(x)
     S = T <: Real ? float(Real) : Float64 # heuristic
-    DiffResults.MutableDiffResult(zero(S), (similar(x, S, dimension(ℓ)), ))
+    DiffResults.MutableDiffResult(zero(S), (similar(x, S), ))
 end
 
 """
