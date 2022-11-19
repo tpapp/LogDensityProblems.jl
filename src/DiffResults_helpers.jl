@@ -11,7 +11,7 @@ $(SIGNATURES)
 Allocate a DiffResults buffer for a gradient, taking the element type of `x` into account
 (heuristically).
 """
-function _diffresults_buffer(ℓ, x)
+function _diffresults_buffer(x)
     T = eltype(x)
     S = T <: Real ? float(Real) : Float64 # heuristic
     DiffResults.MutableDiffResult(zero(S), (similar(x, S), ))
