@@ -11,10 +11,10 @@ $(SIGNATURES)
 Allocate a DiffResults buffer for a gradient, taking the element type of `x` into account
 (heuristically).
 """
-function _diffresults_buffer(ℓ, x)
+function _diffresults_buffer(x)
     T = eltype(x)
     S = T <: Real ? float(Real) : Float64 # heuristic
-    DiffResults.MutableDiffResult(zero(S), (Vector{S}(undef, dimension(ℓ)), ))
+    DiffResults.MutableDiffResult(zero(S), (similar(x, S), ))
 end
 
 """
@@ -25,5 +25,5 @@ constructed with [`diffresults_buffer`](@ref). Gradient is not copied as caller 
 vector.
 """
 function _diffresults_extract(diffresult::DiffResults.DiffResult)
-    DiffResults.value(diffresult)::Real, DiffResults.gradient(diffresult)
+    DiffResults.value(diffresult), DiffResults.gradient(diffresult)
 end

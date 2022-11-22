@@ -45,7 +45,7 @@ end
 
 function logdensity_and_gradient(fℓ::ForwardDiffLogDensity, x::AbstractVector)
     @unpack ℓ, gradientconfig = fℓ
-    buffer = _diffresults_buffer(ℓ, x)
+    buffer = _diffresults_buffer(x)
     result = ForwardDiff.gradient!(buffer, Base.Fix1(logdensity, ℓ), x, gradientconfig)
     _diffresults_extract(result)
 end

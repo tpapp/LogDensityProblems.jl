@@ -50,7 +50,7 @@ end
 
 function logdensity_and_gradient(∇ℓ::ReverseDiffLogDensity, x::AbstractVector)
     @unpack ℓ, compiledtape = ∇ℓ
-    buffer = _diffresults_buffer(ℓ, x)
+    buffer = _diffresults_buffer(x)
     if compiledtape === nothing
         result = ReverseDiff.gradient!(buffer, Base.Fix1(logdensity, ℓ), x)
     else
