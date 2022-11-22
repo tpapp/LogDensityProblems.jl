@@ -25,6 +25,5 @@ constructed with [`diffresults_buffer`](@ref). Gradient is not copied as caller 
 vector.
 """
 function _diffresults_extract(diffresult::DiffResults.DiffResult)
-    # NOTE: Is this still needed?
-    DiffResults.value(diffresult)::Real, DiffResults.gradient(diffresult)
+    DiffResults.value(diffresult), DiffResults.gradient(diffresult)
 end
