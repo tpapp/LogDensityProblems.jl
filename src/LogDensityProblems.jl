@@ -12,8 +12,6 @@ documentation.
 """
 module LogDensityProblems
 
-export ADgradient
-
 using ArgCheck: @argcheck
 using DocStringExtensions: SIGNATURES, TYPEDEF
 using Random: AbstractRNG, default_rng
