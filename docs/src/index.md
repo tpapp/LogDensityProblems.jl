@@ -131,18 +131,19 @@ Here we use the exponential function to transform from ``\mathbb{R}`` to the pos
 
 ## Automatic differentiation
 
-Using either definition, you can now transform to another object which is capable of evaluating the *gradient*, using automatic differentiation. The wrapper for this is
-```@docs
-ADgradient
-```
+Using either definition, you can transform to another object which is capable of evaluating the *gradient*, using automatic differentiation. For this, you need the [LogDensityProblemsAD.jl](https://github.com/tpapp/LogDensityProblemsAD.jl) package.
 
 Now observe that we can obtain gradients, too:
 ```@repl 1
 import ForwardDiff
+using LogDensityProblemsAD
 ∇ℓ = ADgradient(:ForwardDiff, ℓ)
 LogDensityProblems.capabilities(∇ℓ)
 LogDensityProblems.logdensity_and_gradient(∇ℓ, zeros(2))
 ```
+
+!!! note
+    Before version 2.0, `ADgradient` was part of this package. To update older code, just add `using LogDensityProblemsAD`.
 
 ## Manually calculated derivatives
 
