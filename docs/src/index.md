@@ -172,7 +172,6 @@ You may find these utilities useful for debugging and optimization.
 
 ```@docs
 LogDensityProblems.stresstest
-LogDensityProblems.benchmark_ForwardDiff_chunks
 ```
 
 # [Log densities API](@id log-density-api)
