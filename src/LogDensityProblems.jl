@@ -13,6 +13,7 @@ documentation.
 module LogDensityProblems
 
 export ADgradient
+Base.@deprecate_moved ADgradient "LogDensityProblemsAD"
 
 using ArgCheck: @argcheck
 using DocStringExtensions: SIGNATURES, TYPEDEF
