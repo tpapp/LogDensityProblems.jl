@@ -11,13 +11,17 @@ A common framework for implementing and using log densities for inference, provi
 
 1. The [`logdensity`](https://tamaspapp.eu/LogDensityProblems.jl/dev/#LogDensityProblems.logdensity) method with corresponding interface, which can be used by other packages that operate on (log) densities and need to evaluate the log densities or the gradients (eg [MCMC](https://en.wikipedia.org/wiki/Markov_chain_Monte_Carlo), [MAP](https://en.wikipedia.org/wiki/Maximum_a_posteriori_estimation), [ML](https://en.wikipedia.org/wiki/Maximum_likelihood_estimation) or similar methods).
 
-2. The [`ADgradient`](https://tamaspapp.eu/LogDensityProblems.jl/dev/#LogDensityProblems.ADgradient) which makes objects that support `logdensity` to calculate log density *values* calculate log density *gradients* using various automatic differentiation packages.
-
-3. Various utility functions for debugging and testing log densities.
+2. Various utility functions for debugging and testing log densities.
 
 **NOTE** As of version 1.0, transformed log densities have been moved to [TransformedLogDensities.jl](https://github.com/tpapp/TransformedLogDensities.jl). Existing code that uses `TransformedLogDensity` should add
 ```
 using TransformedLogDensities
+```
+or equivalent.
+
+**NOTE**: As of version 2.0, automatic differentiation backends have been moved to [https://github.com/tpapp/LogDensityProblemsAD.jl](https://github.com/tpapp/LogDensityProblemsAD.jl "LogDensityProblemsAD.jl"). If your code uses `ADgradient`, simply add
+```julia
+using LogDensityProblemsAD
 ```
 or equivalent.
 
