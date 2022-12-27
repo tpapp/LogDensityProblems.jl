@@ -38,7 +38,7 @@ end
 
 LogDensityOrder(K::Integer) = LogDensityOrder{K}()
 
-Base.isless(::LogDensityOrder{A}, ::LogDensityOrder{B}) where {A, B} = A ≤ B
+Base.isless(::LogDensityOrder{A}, ::LogDensityOrder{B}) where {A, B} = A < B
 
 """
 $(SIGNATURES)
