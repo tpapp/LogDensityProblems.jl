@@ -76,6 +76,7 @@ Base.show(io::IO, ::TestLogDensity) = print(io, "TestLogDensity")
     @test LogDensityOrder(1) == LogDensityOrder(1)
     @test_throws ArgumentError LogDensityOrder(-1)
     @test LogDensityOrder(2) ≥ LogDensityOrder(1)
+    @test !(LogDensityOrder(1) > LogDensityOrder(1))
 end
 
 ####
