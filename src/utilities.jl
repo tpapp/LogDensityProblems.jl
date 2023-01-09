@@ -37,7 +37,7 @@ Test `ℓ` with random values.
 `N` random vectors are drawn from a standard multivariate Cauchy distribution, scaled with
 `scale` (which can be a scalar or a conformable vector).
 
-Each random vector is then used as an argument in `f(ℓ, ...)`. [`logdensity`](@ref),
+Each random vector `x` is then used as an argument in `f(ℓ, x)`. [`logdensity`](@ref),
 [`logdensity_and_gradient`](@ref), and [`logdensity_gradient_and_hessian`](@ref) are
 recommended for `f`.
 
