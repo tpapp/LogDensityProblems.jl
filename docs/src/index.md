@@ -102,7 +102,7 @@ LogDensityProblems.logdensity(ℓ, zeros(2))
 ```
 
 !!! note
-    Before running time-consuming algorithms like MCMC, it is advisable to test and benchmark your log density evaluations separately. The same applies to [`LogDensityProblems.logdensity_and_gradient`](@ref).
+    Before running time-consuming algorithms like MCMC, it is advisable to test and benchmark your log density evaluations separately. The same applies to [`LogDensityProblems.logdensity_and_gradient`](@ref) and [`LogDensityProblems.logdensity_gradient_and_hessian`](@ref).
 
 ## Manual unpacking and transformation
 
@@ -184,4 +184,5 @@ LogDensityProblems.LogDensityOrder
 LogDensityProblems.dimension
 LogDensityProblems.logdensity
 LogDensityProblems.logdensity_and_gradient
+LogDensityProblems.logdensity_gradient_and_hessian
 ```
