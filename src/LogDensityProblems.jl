@@ -45,9 +45,10 @@ $(SIGNATURES)
 
 Test if the type (or a value, for convenience) supports the log density interface.
 
-When `nothing` is returned, it doesn't support this interface.  When `LogDensityOrder{K}()`
-is returned (typically with `K == 0` or `K = 1`), derivatives up to order `K` are supported.
-*All other return values are invalid*.
+When `nothing` is returned, it doesn't support this interface. When
+`LogDensityOrder{K}()` is returned (typically with `K == 0`, `K = 1`,
+or `K == 2`), derivatives up to order `K` are supported. *All other
+return values are invalid*.
 
 # Interface description
 
@@ -58,6 +59,8 @@ The following methods need to be implemented for the interface:
 2. [`logdensity`](@ref) evaluates the log density at a given point.
 
 3. [`logdensity_and_gradient`](@ref) when `K ≥ 1`.
+
+4. [`logdensity_gradient_and_hessian`](@ref) when `K ≥ 2`.
 
 See also [`LogDensityProblems.stresstest`](@ref) for stress testing.
 """
@@ -105,8 +108,8 @@ function logdensity end
 """
     logdensity_and_gradient(ℓ, x)
 
-Evaluate the log density `ℓ` and its gradient at `x`, which has length compatible with its
-[`dimension`](@ref).
+Evaluate the log density `ℓ` and its gradient at `x`, which has length
+compatible with its [`dimension`](@ref).
 
 Return two values:
 
@@ -123,6 +126,31 @@ The first argument (the log density) can be shifted by a constant, see the note 
 [`logdensity`](@ref).
 """
 function logdensity_and_gradient end
+
+"""
+    logdensity_gradient_and_hessian(ℓ, x)
+
+Evaluate the log density `ℓ`, its gradient, and Hessian at `x`, which
+has length compatible with its [`dimension`](@ref).
+
+Return three values:
+
+- the log density as real number, which equivalent to `logdensity(ℓ, x)`
+
+- *if* the log density is finite, the gradient, an `::AbstractVector` of real numbers,
+   otherwise this value is arbitrary and should be ignored.
+
+- *if* the log density is finite, the Hessian, an `::AbstractMatrix` of real numbers,
+   otherwise this value is arbitrary and should be ignored.
+
+!!! note
+    Caller may assume ownership of results, ie that the gradient and
+    Hessian will not be overwritten or reused for a different purpose.
+
+The first argument (the log density) can be shifted by a constant, see the note for
+[`logdensity`](@ref).
+"""
+function logdensity_gradient_and_hessian end
 
 include("utilities.jl")
 
