@@ -3,10 +3,10 @@ BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
 LogDensityProblemsAD = "996a588d-648d-4e1f-a8f0-a84b347e47b1"
+SimpleUnPack = "ce78b400-467f-4804-87d8-8f486da07d0a"
 Tracker = "9f7883ad-71c0-57eb-9f7f-b5c9e6d3789c"
 TransformVariables = "84d833dd-6860-57f9-a1a7-6da5db126cff"
 TransformedLogDensities = "f9bc47f6-f3f8-4f3b-ab21-f8bc73906f26"
-UnPack = "3a884ed6-31ef-47d7-9d2a-63182c4928ed"
 Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
 [compat]

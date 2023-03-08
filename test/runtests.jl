@@ -1,7 +1,6 @@
 using LogDensityProblems, Test, Random
 import LogDensityProblems: capabilities, dimension, logdensity
 using LogDensityProblems: logdensity_and_gradient, LogDensityOrder
-using UnPack: @unpack
 
 ####
 #### test setup and utilities
