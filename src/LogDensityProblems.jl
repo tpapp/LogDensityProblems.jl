@@ -15,7 +15,6 @@ module LogDensityProblems
 using ArgCheck: @argcheck
 using DocStringExtensions: SIGNATURES, TYPEDEF
 using Random: AbstractRNG, default_rng
-using UnPack: @unpack
 
 ####
 #### interface for problems

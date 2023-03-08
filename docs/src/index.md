@@ -48,7 +48,7 @@ It is useful to define a *callable* that implements this, taking some vector `x`
 
 ```@example 1
 using Random; Random.seed!(1) # hide
-using Statistics, UnPack # imported for our implementation
+using Statistics, SimpleUnPack # imported for our implementation
 
 struct NormalPosterior{T} # contains the summary statistics
     N::Int
