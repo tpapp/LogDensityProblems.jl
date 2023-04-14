@@ -18,11 +18,11 @@ For the purposes of this package, *log densities* are still valid when shifted b
 
 Consider an inference problem where IID draws are obtained from a normal distribution,
 ```math
-x_i \sim N(\mu, \sigma)
+x_i \sim \mathcal{N}(\mu, \sigma)
 ```
 for ``i = 1, \dots, N``. It can be shown that the *log likelihood* conditional on ``\mu`` and ``\sigma`` is
 ```math
-\ell = -N\log \sigma - \sum_{i = 1}^N \frac{(x-\mu)^2}{2\sigma^2} =
+\ell = -N\log \sigma - \sum_{i = 1}^N \frac{(x_i-\mu)^2}{2\sigma^2} =
 -N\left( \log \sigma + \frac{S + (\bar{x} - \mu)^2}{2\sigma^2} \right)
 ```
 where we have dropped constant terms, and defined the sufficient statistics
@@ -36,7 +36,7 @@ S = \frac{1}{N} \sum_{i = 1}^N (x_i - \bar{x})^2
 
 Finally, we use priors
 ```math
-\mu \sim N(0, 5), \sigma \sim N(0, 2)
+\mu \sim \mathcal{N}(0, 5), \sigma \sim \mathcal{N}(0, 2)
 ```
 which yield the log prior
 ```math
