@@ -185,4 +185,5 @@ LogDensityProblems.dimension
 LogDensityProblems.logdensity
 LogDensityProblems.logdensity_and_gradient
 LogDensityProblems.logdensity_gradient_and_hessian
+LogDensityProblems.is_valid_result
 ```

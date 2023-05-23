@@ -1,6 +1,6 @@
 using LogDensityProblems, Test, Random
 import LogDensityProblems: capabilities, dimension, logdensity
-using LogDensityProblems: logdensity_and_gradient, LogDensityOrder
+using LogDensityProblems: logdensity_and_gradient, LogDensityOrder, is_valid_result
 
 ####
 #### test setup and utilities
@@ -79,9 +79,35 @@ Base.show(io::IO, ::TestLogDensity) = print(io, "TestLogDensity")
 end
 
 ####
-#### utilities
+#### valid results
 ####
 
+@testset "valid results" begin
+    @test is_valid_result(1.0)
+    @test is_valid_result(-Inf)
+    @test !is_valid_result(Inf)
+    @test !is_valid_result(NaN)
+    @test !is_valid_result(missing)
+    @test !is_valid_result("a fish")
+
+    @test is_valid_result(1.0, [2.0, 3.0])              # all finite
+    @test !is_valid_result(Inf, [2.0, 3.0])              # invalid
+    @test !is_valid_result(NaN, [2.0, 3.0])              # invalid
+    @test is_valid_result(-Inf, [NaN, Inf])             # gradient ignored
+    @test is_valid_result(-Inf, "wrong type")          # wrong type but ignored
+    @test is_valid_result(-Inf, ["wrong element", 1.0]) # gradient ignored
+
+    @test is_valid_result(1.0, [2.0, 3], [4.0 5; 6 7]) # non-symmetric but OK
+    @test !is_valid_result(Inf, [2.0, 3], [4.0 5; 6 7]) # invalid
+    @test !is_valid_result(NaN, [2.0, 3], [4.0 5; 6 7]) # invalid
+    @test !is_valid_result(:a_fish, [2.0, 3], [4.0 5; 6 7]) # invalid
+    @test is_valid_result(-Inf, [2.0, 3], [NaN 5; 6 7]) # Hessian ignored
+    @test is_valid_result(-Inf, "bad to the", :bone)
+end
+
+####
+#### utilities
+####
 
 @testset "stresstest" begin
     @info "stress testing"
