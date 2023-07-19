@@ -61,6 +61,16 @@ The following methods need to be implemented for the interface:
 
 4. [`logdensity_gradient_and_hessian`](@ref) when `K ≥ 2`.
 
+Additionally, the following method can be implemented.
+It is not required but it can lead to improved performance if the
+gradient of the log density is computed with LogDensityProblemsAD
+using the ForwardDiff automatic differentiation package or
+ReverseDiff with tape compilation.
+
+[`input`](@ref) returns `nothing` (the default) or a point at which the
+log density function can be evaluated. In the latter case, the returned
+value has to be consistent with [`dimension`](@ref).
+
 See also [`LogDensityProblems.stresstest`](@ref) for stress testing.
 """
 capabilities(T::Type) = nothing
@@ -77,6 +87,13 @@ Dimension of the input vectors `x` for log density `ℓ`. See [`logdensity`](@re
     This function is *distinct* from `TransformedVariables.dimension`.
 """
 function dimension end
+
+"""
+    input(ℓ)
+
+Input vector for log density `ℓ`.
+"""
+input(ℓ) = nothing
 
 """
     logdensity(ℓ, x)
