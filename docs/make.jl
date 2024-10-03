@@ -7,10 +7,10 @@ makedocs(
     format = Documenter.HTML(; prettyurls = get(ENV, "CI", nothing) == "true"),
     authors = "Tamás K. Papp",
     sitename = "LogDensityProblems.jl",
-    pages = Any["index.md"]
+    pages = Any["index.md"],
+    checkdocs = :exports,
     # strict = true,
     # clean = true,
-    checkdocs = :exports,
 )
 
 # Some setup is needed for documentation deployment, see “Hosting Documentation” and
