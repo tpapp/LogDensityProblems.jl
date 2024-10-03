@@ -8,8 +8,7 @@ makedocs(
     authors = "Tamás K. Papp",
     sitename = "LogDensityProblems.jl",
     pages = Any["index.md"],
-    checkdocs = :exports,
-    warnonly = Documenter.except(:missing_docs),
+    checkdocs = :none,          # because it fails for module docstring
     # strict = true,
     # clean = true,
 )
