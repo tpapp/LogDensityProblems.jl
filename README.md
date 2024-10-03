@@ -6,6 +6,7 @@
 [![codecov.io](http://codecov.io/github/tpapp/LogDensityProblems.jl/coverage.svg?branch=master)](http://codecov.io/github/tpapp/LogDensityProblems.jl?branch=master)
 [![Documentation](https://img.shields.io/badge/docs-stable-blue.svg)](https://tpapp.github.io/LogDensityProblems.jl/stable)
 [![Documentation](https://img.shields.io/badge/docs-master-blue.svg)](https://tpapp.github.io/LogDensityProblems.jl/dev)
+[![DOI](https://zenodo.org/badge/140587796.svg)](https://doi.org/10.5281/zenodo.13885021)
 
 A common framework for implementing and using log densities for inference, providing the following functionality.
 
