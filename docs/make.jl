@@ -10,7 +10,7 @@ makedocs(
     pages = Any["index.md"]
     # strict = true,
     # clean = true,
-    # checkdocs = :exports,
+    checkdocs = :exports,
 )
 
 # Some setup is needed for documentation deployment, see “Hosting Documentation” and
