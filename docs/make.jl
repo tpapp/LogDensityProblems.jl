@@ -9,6 +9,7 @@ makedocs(
     sitename = "LogDensityProblems.jl",
     pages = Any["index.md"],
     checkdocs = :exports,
+    warnonly = Documenter.except(:missing_docs),
     # strict = true,
     # clean = true,
 )
