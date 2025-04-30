@@ -48,7 +48,7 @@ It is useful to define a *callable* that implements this, taking some vector `x`
 
 ```@example 1
 using Random; Random.seed!(1) # hide
-using Statistics, SimpleUnPack # imported for our implementation
+using Statistics
 
 struct NormalPosterior{T} # contains the summary statistics
     N::Int
@@ -63,8 +63,8 @@ end
 
 # define a callable that unpacks parameters, and evaluates the log likelihood
 function (problem::NormalPosterior)(θ)
-    @unpack μ, σ = θ
-    @unpack N, x̄, S = problem
+    (; μ, σ) = θ
+    (; N, x̄, S) = problem
     loglikelihood = -N * (log(σ) + (S + abs2(μ - x̄)) / (2 * abs2(σ)))
     logprior = - abs2(σ)/8 - abs2(μ)/50
     loglikelihood + logprior
