@@ -46,9 +46,13 @@ which is added to the log likelihood to obtain the log posterior.
 
 It is useful to define a *callable* that implements this, taking some vector `x` as an input and calculating the summary statistics, then, when called with a `NamedTuple` containing the parameters, evaluating to the log posterior.
 
-```@example 1
+```@setup A
+using LogDensityProblems
+```
+
+```@example A
 using Random; Random.seed!(1) # hide
-using Statistics, SimpleUnPack # imported for our implementation
+using Statistics
 
 struct NormalPosterior{T} # contains the summary statistics
     N::Int
@@ -63,8 +67,8 @@ end
 
 # define a callable that unpacks parameters, and evaluates the log likelihood
 function (problem::NormalPosterior)(θ)
-    @unpack μ, σ = θ
-    @unpack N, x̄, S = problem
+    (; μ, σ) = θ
+    (; N, x̄, S) = problem
     loglikelihood = -N * (log(σ) + (S + abs2(μ - x̄)) / (2 * abs2(σ)))
     logprior = - abs2(σ)/8 - abs2(μ)/50
     loglikelihood + logprior
@@ -76,7 +80,7 @@ nothing # hide
 
 Let's try out the posterior calculation:
 
-```@repl 1
+```@repl A
 problem((μ = 0.0, σ = 1.0))
 ```
 
@@ -90,13 +94,13 @@ In our example, we require ``\sigma > 0``, otherwise the problem is meaningless.
 !!! note
     Since version 1.0, TransformedLogDensity has been moved to the package TransformedLogDensities.
 
-```@repl 1
+```@repl A
 using LogDensityProblems, TransformVariables, TransformedLogDensities
 ℓ = TransformedLogDensity(as((μ = asℝ, σ = asℝ₊)), problem)
 ```
 
 Then we can query the dimension of this problem, and evaluate the log density:
-```@repl 1
+```@repl A
 LogDensityProblems.dimension(ℓ)
 LogDensityProblems.logdensity(ℓ, zeros(2))
 ```
@@ -108,7 +112,7 @@ LogDensityProblems.logdensity(ℓ, zeros(2))
 
 If you prefer to implement the transformation yourself, you just have to define the following three methods for your problem: declare that it can evaluate log densities (but not their gradient, hence the `0` order), allow the dimension of the problem to be queried, and then finally code the density calculation with the transformation. (Note that using `TransformedLogDensities.TransformedLogDensity` takes care of all of these for you, as shown above).
 
-```@example 1
+```@example A
 function LogDensityProblems.capabilities(::Type{<:NormalPosterior})
     LogDensityProblems.LogDensityOrder{0}()
 end
@@ -123,7 +127,7 @@ end
 nothing # hide
 ```
 
-```@repl 1
+```@repl A
 LogDensityProblems.logdensity(problem, zeros(2))
 ```
 
@@ -134,7 +138,7 @@ Here we use the exponential function to transform from ``\mathbb{R}`` to the pos
 Using either definition, you can transform to another object which is capable of evaluating the *gradient*, using automatic differentiation. For this, you need the [LogDensityProblemsAD.jl](https://github.com/tpapp/LogDensityProblemsAD.jl) package.
 
 Now observe that we can obtain gradients, too:
-```@repl 1
+```@repl A
 import ForwardDiff
 using LogDensityProblemsAD
 ∇ℓ = ADgradient(:ForwardDiff, ℓ)
