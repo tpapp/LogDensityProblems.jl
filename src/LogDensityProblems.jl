@@ -15,8 +15,9 @@ module LogDensityProblems
 using ArgCheck: @argcheck
 using DocStringExtensions: SIGNATURES, TYPEDEF
 using Random: AbstractRNG, default_rng
+using Compat: @compat
 
-public LogDensityOrder, capabilities, dimension, logdensity, logdensity_and_gradient,
+@compat public LogDensityOrder, capabilities, dimension, logdensity, logdensity_and_gradient,
     logdensity_gradient_and_hessian, precompute, move, move!
 
 ####

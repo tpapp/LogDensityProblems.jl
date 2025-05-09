@@ -1,15 +1,17 @@
 name = "LogDensityProblems"
 uuid = "6fdf6af0-433a-55f7-b3ed-c6c6e0b8df7c"
-authors = ["Tamas K. Papp <tkpapp@gmail.com>"]
 version = "2.1.2"
+authors = ["Tamas K. Papp <tkpapp@gmail.com>"]
 
 [deps]
 ArgCheck = "dce04be8-c92d-5529-be00-80e4d2c0e197"
+Compat = "34da2185-b29b-5c13-b0c7-acf172513d20"
 DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 
 [compat]
 ArgCheck = "1, 2"
+Compat = "4.16.0"
 DocStringExtensions = "0.8, 0.9"
 julia = "1.10"
 
