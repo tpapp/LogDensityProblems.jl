@@ -170,6 +170,10 @@ end
     If the gradient is a mutable vector (eg `Vector`), it should not be reused for another purpose. Practically, each call to [`LogDensityProblems.logdensity_and_gradient`](@ref) should allocate a new one, or use immutables like
     `StaticArrays.SVector` for small dimensions.
 
+# Precomputation API
+
+FIXME
+
 # Various utilities
 
 You may find these utilities useful for debugging and optimization.
@@ -180,7 +184,7 @@ LogDensityProblems.stresstest
 
 # [Log densities API](@id log-density-api)
 
-Use the functions below for evaluating gradients and querying their dimension and other information. These symbols are not exported, as they are mostly used by package developers and in any case would need to be `import`ed or qualified to add methods to.
+Use the functions below for evaluating gradients and querying their dimension and other information. These symbols are `public`, but not exported, as they are mostly used by package developers and in any case would need to be `import`ed or qualified to add methods to.
 
 ```@docs
 LogDensityProblems.capabilities
@@ -190,3 +194,13 @@ LogDensityProblems.logdensity
 LogDensityProblems.logdensity_and_gradient
 LogDensityProblems.logdensity_gradient_and_hessian
 ```
+
+The methods below only need to be implemented for storing precomputed information with coordinates, otherwise the defaults just work.
+
+```@docs
+LogDensityProblems.precompute
+LogDensityProblems.move
+LogDensityProblems.move!
+```
+
+

@@ -15,6 +15,10 @@ module LogDensityProblems
 using ArgCheck: @argcheck
 using DocStringExtensions: SIGNATURES, TYPEDEF
 using Random: AbstractRNG, default_rng
+using Compat: @compat
+
+@compat public LogDensityOrder, capabilities, dimension, logdensity, logdensity_and_gradient,
+    logdensity_gradient_and_hessian, precompute, move, move!
 
 ####
 #### interface for problems
@@ -51,7 +55,7 @@ return values are invalid*.
 
 # Interface description
 
-The following methods need to be implemented for the interface:
+The following methods **need to be implemented** for the interface:
 
 1. [`dimension`](@ref) returns the *dimension* of the domain,
 
@@ -61,7 +65,34 @@ The following methods need to be implemented for the interface:
 
 4. [`logdensity_gradient_and_hessian`](@ref) when `K ≥ 2`.
 
-See also [`LogDensityProblems.stresstest`](@ref) for stress testing.
+The precomputation API (see below) has sensible fallbacks and should only be implemented
+as needed.
+
+# Coordinate points with precomputed information
+
+The interface also allows for encapsulating extra information associated with
+coordinates. The idea is that a coordinate ``x ∈ ℝⁿ`` may be associated with quantities
+precomputed from `x` (such as solutions to implicit equations), which can be updated at
+a lower computational cost when the position is changed instead of recomputed from
+scratch.
+
+The following methods **may be implemented**; but if they are not needed for your
+application this package provides sensible defaults.
+
+1. A type that encapsulates the precomputed information. It should be
+   `<:AbstractVector{T}` for some `T` and support the read-only interface for vectors,
+   ie `Base.size` and `Base.getindex`. When used as a vector, it should just correspond
+   to the position in ``ℝⁿ``.
+
+2. [`precompute`](@ref), which precomputes the relevant information and returns objects of the
+   type above.
+
+3. [`move`](@ref) and [`move!`](@ref) to change the coordinates and recompute the
+   associated information.
+
+# See also
+
+[`LogDensityProblems.stresstest`](@ref) for stress testing.
 """
 capabilities(T::Type) = nothing
 
@@ -150,6 +181,53 @@ The first argument (the log density) can be shifted by a constant, see the note 
 [`logdensity`](@ref).
 """
 function logdensity_gradient_and_hessian end
+
+"""
+$(SIGNATURES)
+
+Precompute information associated with the coordinates `x` and return it as a
+user-defined type.
+
+Cf [`move`](@ref).
+"""
+function precompute(ℓ, x::AbstractVector{T}) where T
+    if T <: AbstractFloat
+        x
+    else
+        float.(x)
+    end
+end
+
+"""
+$(SIGNATURES)
+
+Change the coordinates by `Δ`. Conceptually equivalent to `x .+ Δ`, which is the
+fallback implementation, but user-defined types for the second argument can take
+advantage of the information there to compute the new associated information for small
+changes.
+
+The result should be **the same type** as `x` if `eltype(x) ≡ eltype(Δ)`.
+
+Caller ensures that `x` is the result of [`precompute`](@ref). It is valid for an
+implementation to error in all other cases.
+"""
+move(ℓ, x::AbstractVector, Δ) = x .+ Δ
+
+"""
+$(SIGNATURES)
+
+Equivalent to [`move`](@ref), but *may* modify `x`, which is returned, or choose to
+return a new value.
+
+If a new value is returned, it should be the same type as `x` if `eltype(x) ≡ eltype(Δ)`.
+
+Caller ensures that `x` is the result of [`precompute`](@ref). It is valid for an
+implementation to error in all other cases.
+"""
+function move!(ℓ, x::AbstractVector, Δ)
+    x .+= Δ
+    x
+end
 
 include("utilities.jl")
 
