@@ -16,6 +16,21 @@ using ArgCheck: @argcheck
 using DocStringExtensions: SIGNATURES, TYPEDEF
 using Random: AbstractRNG, default_rng
 
+# https://github.com/JuliaLang/julia/pull/50105
+@static if VERSION >= v"1.11.0-DEV.469"
+    eval(
+        Expr(
+            :public,
+            :capabilities,
+            :LogDensityOrder,
+            :dimension,
+            :logdensity,
+            :logdensity_and_gradient,
+            :logdensity_gradient_and_hessian,
+        )
+    )
+end
+
 ####
 #### interface for problems
 ####
