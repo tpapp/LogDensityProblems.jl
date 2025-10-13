@@ -90,3 +90,18 @@ end
     @test 50 ≤ length(failures) ≤ 100
     @test all(x -> all(x .< 0), failures)
 end
+
+####
+#### public API
+####
+
+@testset "public API" begin
+    if isdefined(Base, :ispublic)
+        @test Base.ispublic(LogDensityProblems, :capabilities)
+        @test Base.ispublic(LogDensityProblems, :LogDensityOrder)
+        @test Base.ispublic(LogDensityProblems, :dimension)
+        @test Base.ispublic(LogDensityProblems, :logdensity)
+        @test Base.ispublic(LogDensityProblems, :logdensity_and_gradient)
+        @test Base.ispublic(LogDensityProblems, :logdensity_gradient_and_hessian)
+    end
+end
