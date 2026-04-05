@@ -96,6 +96,7 @@ end
 ####
 
 @testset "public API" begin
+    # NOTE remove this once we require Julia v1.11 and use public
     if isdefined(Base, :ispublic)
         @test Base.ispublic(LogDensityProblems, :capabilities)
         @test Base.ispublic(LogDensityProblems, :LogDensityOrder)
@@ -103,5 +104,6 @@ end
         @test Base.ispublic(LogDensityProblems, :logdensity)
         @test Base.ispublic(LogDensityProblems, :logdensity_and_gradient)
         @test Base.ispublic(LogDensityProblems, :logdensity_gradient_and_hessian)
+        @test Base.ispublic(LogDensityProblems, :stresstest)
     end
 end
