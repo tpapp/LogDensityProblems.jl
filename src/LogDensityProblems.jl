@@ -17,6 +17,7 @@ using DocStringExtensions: SIGNATURES, TYPEDEF
 using Random: AbstractRNG, default_rng
 
 # https://github.com/JuliaLang/julia/pull/50105
+# NOTE remove this once we require Julia v1.11 and use public
 @static if VERSION >= v"1.11.0-DEV.469"
     eval(
         Expr(
@@ -27,6 +28,8 @@ using Random: AbstractRNG, default_rng
             :logdensity,
             :logdensity_and_gradient,
             :logdensity_gradient_and_hessian,
+            :stresstest,
+            :converting_logdensity,
         )
     )
 end

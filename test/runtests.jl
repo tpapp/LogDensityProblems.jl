@@ -1,5 +1,6 @@
 using LogDensityProblems, Test, Random
-import LogDensityProblems: capabilities, dimension, logdensity
+import LogDensityProblems: capabilities, dimension, logdensity, logdensity_and_gradient,
+    logdensity_gradient_and_hessian
 using LogDensityProblems: logdensity_and_gradient, LogDensityOrder
 
 ####
@@ -96,6 +97,7 @@ end
 ####
 
 @testset "public API" begin
+    # NOTE remove this once we require Julia v1.11 and use public
     if isdefined(Base, :ispublic)
         @test Base.ispublic(LogDensityProblems, :capabilities)
         @test Base.ispublic(LogDensityProblems, :LogDensityOrder)
@@ -103,5 +105,42 @@ end
         @test Base.ispublic(LogDensityProblems, :logdensity)
         @test Base.ispublic(LogDensityProblems, :logdensity_and_gradient)
         @test Base.ispublic(LogDensityProblems, :logdensity_gradient_and_hessian)
+        @test Base.ispublic(LogDensityProblems, :stresstest)
+        @test Base.ispublic(LogDensityProblems, :converting_logdensity)
     end
+end
+
+####
+#### converting logdensity
+####
+
+struct BadLogDensity end
+dimension(::BadLogDensity) = 1
+capabilities(::BadLogDensity) = LogDensityOrder(2)
+_bad_x(x) = (_x = only(x); _x > 0 ? Float64(_x) : _x) # introduce type instability
+function logdensity(::BadLogDensity, x::Vector{Float32}) # deliberate restriction
+     -_bad_x(x)^2 / 2
+end
+function logdensity_and_gradient(::BadLogDensity, x::Vector{Float32})
+    _x = _bad_x(x)
+     -_x^2 / 2, [-_x]
+end
+function logdensity_gradient_and_hessian(::BadLogDensity, x::Vector{Float32})
+    _x = _bad_x(x)
+     -_x^2 / 2, [-_x], [-one(_x)]
+end
+
+@testset "converting logdensity" begin
+    bad = BadLogDensity()
+    ℓ = LogDensityProblems.converting_logdensity(bad;
+                                                 input = Vector{Float32},
+                                                 logdensity = Float64,
+                                                 gradient = Vector{Float64})
+    @test dimension(ℓ) == dimension(bad)
+    @test capabilities(ℓ) == capabilities(bad)
+    x = [0.9]                   # no such method for the parent
+    xF32 = Float32.(x)
+    @test @inferred(logdensity(ℓ, x)) == logdensity(bad, xF32)
+    @test @inferred(logdensity_and_gradient(ℓ, x)) == logdensity_and_gradient(bad, xF32)
+    @test eltype(logdensity_gradient_and_hessian(ℓ, .-x)[3]) ≡ Float32 # we do not touch this
 end
