@@ -29,6 +29,7 @@ using Random: AbstractRNG, default_rng
             :logdensity_and_gradient,
             :logdensity_gradient_and_hessian,
             :stresstest,
+            :converting_logdensity,
         )
     )
 end
