@@ -1,0 +1,19 @@
+# see https://docs.github.com/en/code-security/dependabot/working-with-dependabot/keeping-your-actions-up-to-date-with-dependabot
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      # Check for updates to GitHub Actions every month
+      interval: "monthly"
+  - package-ecosystem: "julia"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    groups:
+      # Group all Julia package updates into a single PR:
+      all-julia-packages:
+        patterns:
+          - "*"
+    ignore:
+      - dependency-name: "LogDensityProblems"
